@@ -22,15 +22,19 @@ export default function Home() {
   return (
     <Card className="w-[350px]">
       <CardHeader>
-        <CardTitle>Create project</CardTitle>
-        <CardDescription>Deploy your new project in one-click.</CardDescription>
+        <CardTitle>Create profil</CardTitle>
+        <CardDescription>create new profil for the application</CardDescription>
       </CardHeader>
       <CardContent>
         <form>
           <div className="grid w-full items-center gap-4">
             <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="name">Name</Label>
-              <Input id="name" placeholder="Name of your project" />
+              <Label htmlFor="name">Username</Label>
+              <Input id="name" placeholder="Username" />
+            </div>
+            <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="name">Lastname</Label>
+              <Input id="name" placeholder="Lastname" />
             </div>
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="framework">Framework</Label>
@@ -49,10 +53,12 @@ export default function Home() {
           </div>
         </form>
       </CardContent>
-      <CardFooter className="flex justify-between">
+      <CardFooter className="flex justify-between p-t-4">
         <Button variant="outline">Cancel</Button>
         <Button>Deploy</Button>
       </CardFooter>
     </Card>
+    
+    
   );
 }
