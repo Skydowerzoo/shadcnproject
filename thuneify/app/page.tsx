@@ -1,63 +1,13 @@
-import Image from "next/image";
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+
+import { LoginForm } from "@/components/login-form"
 
 export default function Home() {
   return (
-    <Card className="w-[350px]">
-      <CardHeader>
-        <CardTitle>Create profil</CardTitle>
-        <CardDescription>create new profil for the application</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form>
-          <div className="grid w-full items-center gap-4">
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="name">Username</Label>
-              <Input id="name" placeholder="Username" />
-            </div>
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="name">Lastname</Label>
-              <Input id="name" placeholder="Lastname" />
-            </div>
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="framework">Framework</Label>
-              <Select>
-                <SelectTrigger id="framework">
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent position="popper">
-                  <SelectItem value="next">Next.js</SelectItem>
-                  <SelectItem value="sveltekit">SvelteKit</SelectItem>
-                  <SelectItem value="astro">Astro</SelectItem>
-                  <SelectItem value="nuxt">Nuxt.js</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </form>
-      </CardContent>
-      <CardFooter className="flex justify-between p-t-4">
-        <Button variant="outline">Cancel</Button>
-        <Button>Deploy</Button>
-      </CardFooter>
-    </Card>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Bienvenu sur l'application Thuneify</h1>
+      <p className="mb-4">Vous retrouverez ici tout ce que vous pouvez faire via cette application</p>
+      <LoginForm />
+    </div>
     
     
   );
