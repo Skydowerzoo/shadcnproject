@@ -2,9 +2,9 @@ import { LoginForm } from "@/components/login-form";
 
 export default function Page() {
   return (
-    <div className="grid grid-cols-3 gap-4 ...">
+    <div className="grid grid-cols-3 gap-4 w-full">
       <div>01</div>
-      <div className="place-self-auto ...">
+      <div className="place-self-auto">
         02
         <LoginForm />
       </div>
