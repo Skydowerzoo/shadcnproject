@@ -1,5 +1,4 @@
 import type React from "react";
-import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import {
@@ -16,11 +15,6 @@ import { ThemeProvider } from "../components/theme-provider";
 import Link from "next/link";
 
 const inter = Inter({ subsets: ["latin"] });
-
-export const metadata: Metadata = {
-  title: "Acme Inc.",
-  description: "Welcome to Acme Inc.",
-};
 
 export default function RootLayout({
   children,
@@ -87,14 +81,17 @@ export default function RootLayout({
                   </div>
                 </SidebarFooter>
               </Sidebar>
-              <SidebarInset className="flex flex-col h-16 ">
-                <header className="flex items-center p-4 ">
-                  <SidebarTrigger />
-                </header>
-                <main className="flex-1 overflow-y-auto p-6">{children}</main>
-              </SidebarInset>
+              <div>
+                <SidebarInset className="flex flex-col h-16">
+                  <header className="flex items-center p-4 ">
+                    <SidebarTrigger />
+                  </header>
+                  <main>{children}</main>
+                </SidebarInset>
+              </div>
             </div>
           </SidebarProvider>
+          
         </ThemeProvider>
       </body>
     </html>
