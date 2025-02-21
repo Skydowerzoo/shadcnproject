@@ -8,43 +8,44 @@ body {
 
 @layer base {
   :root {
-    --background: 0 50% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 90%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
-    
-    --chart-1: 12 76% 61%;
+    --background: 0 0% 85%; /* Fond gris plus sombre */
+    --foreground: 240 10% 15%; /* Texte plus foncé pour un meilleur contraste */
+    --card: 0 0% 80%; /* Fond de carte gris plus sombre */
+    --card-foreground: 240 10% 15%; /* Texte des cartes */
+    --popover: 0 0% 82%; /* Fond des popovers gris plus sombre */
+    --popover-foreground: 240 10% 15%; /* Texte des popovers */
+    --primary: 240 5% 25%; /* Couleur primaire plus foncée */
+    --primary-foreground: 0 0% 98%; /* Texte sur fond primaire */
+    --secondary: 240 4% 85%; /* Couleur secondaire plus foncée */
+    --secondary-foreground: 240 5% 25%; /* Texte sur fond secondaire */
+    --muted: 240 4% 85%; /* Couleur muette plus foncée */
+    --muted-foreground: 240 3.8% 45%; /* Texte muet */
+    --accent: 240 4% 85%; /* Couleur d'accentuation plus foncée */
+    --accent-foreground: 240 5% 25%; /* Texte sur fond accentué */
+    --destructive: 0 70% 45%; /* Rouge moins vif et plus sombre */
+    --destructive-foreground: 0 0% 98%; /* Texte sur fond destructeur */
+    --border: 240 5% 75%; /* Bordure plus sombre */
+    --input: 240 5% 75%; /* Champ de saisie plus sombre */
+    --ring: 240 10% 15%; /* Couleur du focus ring */
+
+    --chart-1: 12 76% 61%; /* Couleurs des graphiques inchangées */
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
+    --radius: 0.5rem; /* Rayon des coins inchangé */
 
-    --sidebar-background: 0 0% 90%; /* Light gray background */
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-    --sidebar-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); /* Added shadow */
+    --sidebar-background: 0 0% 82%; /* Fond de la barre latérale gris plus sombre */
+    --sidebar-foreground: 240 5% 25%; /* Texte de la barre latérale */
+    --sidebar-primary: 240 5% 25%; /* Couleur primaire de la barre latérale */
+    --sidebar-primary-foreground: 0 0% 98%; /* Texte sur fond primaire de la barre latérale */
+    --sidebar-accent: 240 4% 85%; /* Couleur d'accentuation de la barre latérale */
+    --sidebar-accent-foreground: 240 5% 25%; /* Texte sur fond accentué de la barre latérale */
+    --sidebar-border: 240 5% 75%; /* Bordure de la barre latérale plus sombre */
+    --sidebar-ring: 240 10% 15%; /* Couleur du focus ring de la barre latérale */
+    --sidebar-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); /* Ombre inchangée */
   }
+
 
   .dark {
     --background: 240 10% 3.9%;
@@ -89,6 +90,17 @@ body {
 @layer base {
   * {
     @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;

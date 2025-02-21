@@ -36,7 +36,6 @@ export default function RootLayout({
               </main>
             </SidebarInset>
           </SidebarProvider>
-
         </ThemeProvider>
       </body>
     </html>

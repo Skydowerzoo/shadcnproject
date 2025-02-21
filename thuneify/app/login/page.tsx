@@ -1,17 +1,12 @@
-import { LoginForm } from "@/components/login-form";
+import { CardWithForm } from "@/components/card-login";
+
 
 export default function Page() {
   return (
-    <div className="grid grid-cols-3 gap-4 w-full">
-      <div>01</div>
-      <div className="place-self-auto">
-        02
-        <LoginForm />
+    <div className="w-auto m-20 place-self-center">
+      <div>
+         <CardWithForm />
       </div>
-      <div>03</div>
-      <div>04</div>
-      <div>05</div>
-      <div>06</div>
     </div>
   );
 }

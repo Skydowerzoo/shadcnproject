@@ -2,14 +2,9 @@
 
 import {
   BadgeDollarSign,
-  Book,
   BookOpen,
-  Calendar,
   Home,
-  Inbox,
   Moon,
-  Search,
-  Settings,
   ShoppingBasket,
   Sun,
   User,
@@ -22,7 +17,6 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -41,27 +35,27 @@ import { Button } from "./ui/button";
 const items = [
   {
     title: "Home",
-    url: "#",
+    url: "/",
     icon: Home,
   },
   {
     title: "Expenses",
-    url: "#",
+    url: "/expenses",
     icon: BadgeDollarSign,
   },
   {
     title: "Grocery",
-    url: "#",
+    url: "/grocery",
     icon: ShoppingBasket,
   },
   {
     title: "Manga",
-    url: "#",
+    url: "/manga",
     icon: BookOpen,
   },
   {
     title: "Account",
-    url: "#",
+    url: "/account",
     icon: User,
   },
 ];
