@@ -1,4 +1,4 @@
-import { CardWithForm } from "@/components/card-login";
+import { CardWithForm } from "@/components/login/card-login";
 
 
 export default function Page() {

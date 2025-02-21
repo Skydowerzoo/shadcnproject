@@ -18,19 +18,19 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { PencilIcon, SaveIcon, XIcon } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+
 
 export default function UserProfile() {
   const [isEditing, setIsEditing] = useState(false);
   const [userData, setUserData] = useState({
-    firstName: "Jean",
-    lastName: "Dupont",
-    date:"00/00/0000",
+    firstName: "",
+    lastName: "",
+    date:"",
     email: "jean.dupont@example.com",
-    phone: "06 12 34 56 78",
+    phone: "",
     password: "",
-    address: "123 rue de Paris\n75001 Paris",
-    bio: "Développeur web passionné par les nouvelles technologies.",
+    address: "",
+    bio: "",
   });
 
   const handleSave = () => {

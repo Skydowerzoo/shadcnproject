@@ -10,7 +10,7 @@ import {
   User,
 } from "lucide-react";
 
-import { SidebarFooter, SidebarHeader } from "./ui/sidebar";
+import { SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
 
 import {
   Sidebar,
@@ -29,7 +29,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "next-themes";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 
 // Menu items.
 const items = [
