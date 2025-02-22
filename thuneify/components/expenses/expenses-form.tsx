@@ -22,55 +22,55 @@ export function ExpensesForm({ onAddExpense }) {
     setCommun("");
   };
 
-
   return (
-    <form onSubmit={handleSubmit}>
-        <div className="mt-4">
-            <h1>Add new Expenses</h1>
-        </div>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <h1 className="text-lg font-semibold">Add New Expenses</h1>
+      </div>
+
       {/* Champ date */}
-      <div className=" mt-4 w-full">
+      <div>
         <Label htmlFor="date">Date</Label>
         <Input
-        className="w-2/3"
           type="date"
           id="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
           required
+          className="w-auto"
         />
       </div>
 
       {/* Champ Montent pour compte perso */}
-      <div className="mt-4">
-        <Label htmlFor="perso">Personal account</Label>
-        <div className="relative">
-          <Input
-            type="number"
-            id="perso"
-            value={perso}
-            onChange={(e) => setPerso(e.target.value)}
-            required
-          />
-        </div>
+      <div>
+        <Label htmlFor="perso">Personal Account</Label>
+        <Input
+          type="number"
+          id="perso"
+          value={perso}
+          onChange={(e) => setPerso(e.target.value)}
+          required
+          className="w-full"
+        />
       </div>
 
-      {/* Champ Montent pour compte perso */}
-      <div className="mt-4">
-        <Label htmlFor="global" >Global account</Label>
-        <div className="relative">
-          <Input
-            type="number"
-            id="perso"
-            value={commun}
-            onChange={(e) => setCommun(e.target.value)}
-            required
-          />
-        </div>
-      </div>
+      {/* Champ Montent pour compte commun */}
       <div>
-        <Button className="w-full h-auto place-self-center mt-4 mb-4" >
-            Add new informations
+        <Label htmlFor="commun">Global Account</Label>
+        <Input
+          type="number"
+          id="commun"
+          value={commun}
+          onChange={(e) => setCommun(e.target.value)}
+          required
+          className="w-full"
+        />
+      </div>
+
+      {/* Bouton de soumission */}
+      <div>
+        <Button type="submit" className="w-full">
+          Add New Information
         </Button>
       </div>
     </form>
