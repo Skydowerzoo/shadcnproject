@@ -2,9 +2,8 @@
 
 import * as React from "react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { TrendingUp } from "lucide-react";
-import { Button } from "@/components/ui/button"; // Importez le composant Button
-
+import { TrendingUp, Eye, EyeOff } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -29,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ExpensesForm } from "./expenses-form";
+import { DataTableDemo } from "./data-table-demo"; // Importez la table
 
 const chartData = [
   { date: "2024-06-22", perso: 15, commun: 0 },
@@ -58,7 +58,8 @@ const chartConfig = {
 export function Dashboard() {
   const [timeRange, setTimeRange] = React.useState("360d");
   const [data, setData] = React.useState(chartData);
-  const [chartType, setChartType] = React.useState<"area" | "bar">("area"); // État pour le type de graphique
+  const [chartType, setChartType] = React.useState<"area" | "bar">("area");
+  const [showChart, setShowChart] = React.useState(true);
 
   const handleAddExpense = (newExpense: any) => {
     setData((prevData) => {
@@ -87,11 +88,22 @@ export function Dashboard() {
   });
 
   return (
-    <div className="min-h-screen p-4">
+    <div className="min-h-screen p-4 space-y-6">
       {/* Carte pour le formulaire */}
       <Card className="mb-6 mx-auto max-w-md">
         <CardContent className="p-4">
           <ExpensesForm onAddExpense={handleAddExpense} />
+        </CardContent>
+      </Card>
+
+      {/* Carte pour la table */}
+      <Card className="mx-auto max-w-6xl">
+        <CardHeader className="border-b pb-4">
+          <CardTitle>Expenses Table</CardTitle>
+          <CardDescription>View and manage your expenses.</CardDescription>
+        </CardHeader>
+        <CardContent className="p-4">
+          <DataTableDemo data={data} /> {/* Passez les données ici */}
         </CardContent>
       </Card>
 
@@ -115,115 +127,121 @@ export function Dashboard() {
                 <SelectItem value="7d">Last 7 days</SelectItem>
               </SelectContent>
             </Select>
-            {/* Bouton pour basculer entre les graphiques */}
             <Button
               variant="outline"
               onClick={() => setChartType(chartType === "area" ? "bar" : "area")}
             >
               Switch to {chartType === "area" ? "Bar Chart" : "Area Chart"}
             </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowChart(!showChart)}
+            >
+              {showChart ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              <span className="ml-2">{showChart ? "Hide Chart" : "Show Chart"}</span>
+            </Button>
           </div>
         </CardHeader>
-        <CardContent className="p-4">
-          <ChartContainer config={chartConfig}>
-            {chartType === "area" ? (
-              // Graphique en aires (AreaChart)
-              <AreaChart data={filteredData}>
-                <defs>
-                  <linearGradient id="fillPerso" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--color-perso)" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="var(--color-perso)" stopOpacity={0.1} />
-                  </linearGradient>
-                  <linearGradient id="fillcommun" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--color-commun)" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="var(--color-commun)" stopOpacity={0.1} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey="date"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  minTickGap={32}
-                  tickFormatter={(value) => {
-                    const date = new Date(value);
-                    return date.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    });
-                  }}
-                />
-                <YAxis tickFormatter={(value) => `${value} €`} />
-                <ChartTooltip
-                  cursor={false}
-                  content={
-                    <ChartTooltipContent
-                      labelFormatter={(value) => {
-                        return new Date(value).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        });
-                      }}
-                      indicator="dot"
-                    />
-                  }
-                />
-                <Area
-                  dataKey="commun"
-                  type="natural"
-                  fill="url(#fillcommun)"
-                  stroke="var(--color-commun)"
-                  stackId="a"
-                />
-                <Area
-                  dataKey="perso"
-                  type="natural"
-                  fill="url(#fillPerso)"
-                  stroke="var(--color-perso)"
-                  stackId="a"
-                />
-                <ChartLegend content={<ChartLegendContent />} />
-              </AreaChart>
-            ) : (
-              // Graphique en barres (BarChart)
-              <BarChart data={filteredData}>
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey="date"
-                  tickLine={false}
-                  tickMargin={10}
-                  axisLine={false}
-                  tickFormatter={(value) => {
-                    const date = new Date(value);
-                    return date.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    });
-                  }}
-                />
-                <YAxis tickFormatter={(value) => `${value} €`} />
-                <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                <ChartLegend content={<ChartLegendContent />} />
-                <Bar
-                  dataKey="perso"
-                  stackId="a"
-                  fill="var(--color-perso)"
-                  radius={[0, 0, 4, 4]}
-                />
-                <Bar
-                  dataKey="commun"
-                  stackId="a"
-                  fill="var(--color-commun)"
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            )}
-          </ChartContainer>
-        </CardContent>
+        {showChart && (
+          <CardContent className="p-4">
+            <ChartContainer config={chartConfig}>
+              {chartType === "area" ? (
+                <AreaChart data={filteredData}>
+                  <defs>
+                    <linearGradient id="fillPerso" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--color-perso)" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="var(--color-perso)" stopOpacity={0.1} />
+                    </linearGradient>
+                    <linearGradient id="fillcommun" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--color-commun)" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="var(--color-commun)" stopOpacity={0.1} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid vertical={false} />
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    minTickGap={32}
+                    tickFormatter={(value) => {
+                      const date = new Date(value);
+                      return date.toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      });
+                    }}
+                  />
+                  <YAxis tickFormatter={(value) => `${value} €`} />
+                  <ChartTooltip
+                    cursor={false}
+                    content={
+                      <ChartTooltipContent
+                        labelFormatter={(value) => {
+                          return new Date(value).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                          });
+                        }}
+                        indicator="dot"
+                      />
+                    }
+                  />
+                  <Area
+                    dataKey="commun"
+                    type="natural"
+                    fill="url(#fillcommun)"
+                    stroke="var(--color-commun)"
+                    stackId="a"
+                  />
+                  <Area
+                    dataKey="perso"
+                    type="natural"
+                    fill="url(#fillPerso)"
+                    stroke="var(--color-perso)"
+                    stackId="a"
+                  />
+                  <ChartLegend content={<ChartLegendContent />} />
+                </AreaChart>
+              ) : (
+                <BarChart data={filteredData}>
+                  <CartesianGrid vertical={false} />
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    tickMargin={10}
+                    axisLine={false}
+                    tickFormatter={(value) => {
+                      const date = new Date(value);
+                      return date.toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      });
+                    }}
+                  />
+                  <YAxis tickFormatter={(value) => `${value} €`} />
+                  <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                  <ChartLegend content={<ChartLegendContent />} />
+                  <Bar
+                    dataKey="perso"
+                    stackId="a"
+                    fill="var(--color-perso)"
+                    radius={[0, 0, 4, 4]}
+                  />
+                  <Bar
+                    dataKey="commun"
+                    stackId="a"
+                    fill="var(--color-commun)"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              )}
+            </ChartContainer>
+          </CardContent>
+        )}
         <CardFooter className="flex-col items-start gap-2 text-sm">
           <div className="flex gap-2 font-medium leading-none">
-          Showing total expenses for the selected period <TrendingUp className="h-4 w-4" />
+            Showing total expenses for the selected period <TrendingUp className="h-4 w-4" />
           </div>
         </CardFooter>
       </Card>
