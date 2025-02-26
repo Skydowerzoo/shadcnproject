@@ -28,7 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ExpensesForm } from "./expenses-form";
-import { DataTableDemo } from "./data-table-demo"; // Importez la table
+import { DataTable } from "./data-table"; // Importez la table
 
 const chartData = [
   { date: "2024-06-22", perso: 15, commun: 0 },
