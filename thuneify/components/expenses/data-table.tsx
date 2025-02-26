@@ -122,7 +122,7 @@ interface DataTableDemoProps {
   data: Expense[]; // Les données du graphique passées en props
 }
 
-export function DataTableDemo({ data }: DataTableDemoProps) {
+export function DataTable({ data }: DataTableDemoProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
