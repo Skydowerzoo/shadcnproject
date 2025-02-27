@@ -1,22 +1,23 @@
 "use client";
 
 import {
-  BadgeDollarSign,
-  BookOpen,
+  Calendar,
   Home,
+  Inbox,
   Moon,
-  ShoppingBasket,
+  Search,
+  Settings,
   Sun,
-  User,
 } from "lucide-react";
 
-import { SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
+import { SidebarFooter, SidebarHeader } from "./ui/sidebar";
 
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -29,34 +30,34 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "next-themes";
-import { Button } from "@/components/ui/button";
+import { Button } from "./ui/button";
 
 // Menu items.
 const items = [
   {
     title: "Home",
-    url: "/",
+    url: "#",
     icon: Home,
   },
   {
-    title: "Expenses",
-    url: "/expenses",
-    icon: BadgeDollarSign,
+    title: "Inbox",
+    url: "#",
+    icon: Inbox,
   },
   {
-    title: "Grocery",
-    url: "/grocery",
-    icon: ShoppingBasket,
+    title: "Calendar",
+    url: "#",
+    icon: Calendar,
   },
   {
-    title: "Manga",
-    url: "/manga",
-    icon: BookOpen,
+    title: "Search",
+    url: "#",
+    icon: Search,
   },
   {
-    title: "Account",
-    url: "/account",
-    icon: User,
+    title: "Settings",
+    url: "#",
+    icon: Settings,
   },
 ];
 
@@ -72,6 +73,9 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
+          <SidebarGroupLabel className="flex justify-between items-center">
+            <h1>Thuneify</h1>
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
@@ -93,9 +97,9 @@ export function AppSidebar() {
           <span>© 2025 Thuneify</span>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              <Button variant="ghost" size="sm">
+                <Sun className="h-[1.2rem] w-[1.2rem] ml-10rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute h-[1.2rem] w-[1.2rem] ml-10 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
                 <span className="sr-only">Toggle theme</span>
               </Button>
             </DropdownMenuTrigger>
