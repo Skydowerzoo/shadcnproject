@@ -1,16 +1,13 @@
 "use client";
 
-import * as React from "react";
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { TrendingUp, Eye, EyeOff, Table, BarChart2 } from "lucide-react"; // Ajout des icônes pour le tableau et les graphiques
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "@/components/ui/card";
 import {
   ChartConfig,
@@ -27,8 +24,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ExpensesForm } from "./expenses-form";
-import { DataTableDemo } from "./data-table-demo";
+import { BarChart2, Eye, EyeOff, Plus, Table, TrendingUp } from "lucide-react"; // Ajout de l'icône Plus
+import * as React from "react";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { DataTable } from "./data-table-demo";
+import { ExpensesForm } from "./expenses-form"; // Importer le formulaire
+
+// Importer les composants Dialog
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const chartData = [
   { date: "2024-06-22", perso: 15, commun: 0 },
@@ -42,8 +60,6 @@ const chartData = [
   { date: "2025-02-10", perso: 36, commun: 52 },
 ];
 
-const sortedChartData = chartData.sort((a, b) => new Date(a.date) - new Date(b.date));
-
 const chartConfig = {
   perso: {
     label: "Perso",
@@ -55,17 +71,29 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+type Expense = {
+  date: string; // La date au format "YYYY-MM-DD"
+  perso: number; // Le montant pour le compte personnel
+  commun: number; // Le montant pour le compte commun
+};
+
 export function Dashboard() {
   const [timeRange, setTimeRange] = React.useState("360d");
   const [data, setData] = React.useState(chartData);
   const [chartType, setChartType] = React.useState<"area" | "bar">("area");
   const [showChart, setShowChart] = React.useState(true);
-  const [showTable, setShowTable] = React.useState(false); // Nouvel état pour contrôler l'affichage du tableau
+  const [showTable, setShowTable] = React.useState(false);
 
-  const handleAddExpense = (newExpense: any) => {
+  const handleAddExpense = (newExpense: Expense) => {
     setData((prevData) => {
       const updatedData = [...prevData, newExpense];
-      return updatedData.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      // Trier les données par date
+      return updatedData.sort((a, b) => {
+        const dateA = new Date(a.date).getTime(); // Convertir en timestamp
+        const dateB = new Date(b.date).getTime(); // Convertir en timestamp
+        return dateA - dateB; // Comparer les timestamps
+      });
     });
   };
 
@@ -90,30 +118,50 @@ export function Dashboard() {
 
   return (
     <div className="min-h-screen p-4 space-y-6">
-      {/* Carte pour le formulaire */}
-      <Card className="mb-6 mx-auto max-w-md">
-        <CardContent className="p-4">
-          <ExpensesForm onAddExpense={handleAddExpense} />
-        </CardContent>
-      </Card>
-
       {/* Carte pour la table et les graphiques */}
       <Card className="mx-auto max-w-6xl">
         <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-4">
           <div className="space-y-1">
             <CardTitle>Account Expenses</CardTitle>
             <CardDescription>
-              {showTable ? "View and manage your expenses." : "Showing monthly expenses"}
+              {showTable
+                ? "View and manage your expenses."
+                : "Showing monthly expenses"}
             </CardDescription>
           </div>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setShowTable(!showTable)}
-            >
-              {showTable ? <BarChart2 className="h-4 w-4" /> : <Table className="h-4 w-4" />}
-              <span className="ml-2">{showTable ? "Show Charts" : "Show Table"}</span>
+            {/* Bouton Add New Expenses */}
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="w-auto">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Expenses
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add New Expense</DialogTitle>
+                  <DialogDescription>
+                    Fill in the details below to add a new expense.
+                  </DialogDescription>
+                </DialogHeader>
+                {/* Intégrer le formulaire ici */}
+                <ExpensesForm onAddExpense={handleAddExpense} />
+              </DialogContent>
+            </Dialog>
+
+            {/* Bouton Show Table */}
+            <Button variant="outline" onClick={() => setShowTable(!showTable)}>
+              {showTable ? (
+                <BarChart2 className="h-4 w-4" />
+              ) : (
+                <Table className="h-4 w-4" />
+              )}
+              <span className="ml-2">
+                {showTable ? "Show Charts" : "Show Table"}
+              </span>
             </Button>
+
             {!showTable && (
               <>
                 <Select value={timeRange} onValueChange={setTimeRange}>
@@ -130,7 +178,9 @@ export function Dashboard() {
                 </Select>
                 <Button
                   variant="outline"
-                  onClick={() => setChartType(chartType === "area" ? "bar" : "area")}
+                  onClick={() =>
+                    setChartType(chartType === "area" ? "bar" : "area")
+                  }
                 >
                   Switch to {chartType === "area" ? "Bar Chart" : "Area Chart"}
                 </Button>
@@ -138,8 +188,14 @@ export function Dashboard() {
                   variant="outline"
                   onClick={() => setShowChart(!showChart)}
                 >
-                  {showChart ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  <span className="ml-2">{showChart ? "Hide Chart" : "Show Chart"}</span>
+                  {showChart ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                  <span className="ml-2">
+                    {showChart ? "Hide Chart" : "Show Chart"}
+                  </span>
                 </Button>
               </>
             )}
@@ -147,7 +203,7 @@ export function Dashboard() {
         </CardHeader>
         {showTable ? (
           <CardContent className="p-4">
-            <DataTableDemo data={data} />
+            <DataTable data={data} />
           </CardContent>
         ) : (
           showChart && (
@@ -156,13 +212,41 @@ export function Dashboard() {
                 {chartType === "area" ? (
                   <AreaChart data={filteredData}>
                     <defs>
-                      <linearGradient id="fillPerso" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="var(--color-perso)" stopOpacity={0.8} />
-                        <stop offset="95%" stopColor="var(--color-perso)" stopOpacity={0.1} />
+                      <linearGradient
+                        id="fillPerso"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor="var(--color-perso)"
+                          stopOpacity={0.8}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="var(--color-perso)"
+                          stopOpacity={0.1}
+                        />
                       </linearGradient>
-                      <linearGradient id="fillcommun" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="var(--color-commun)" stopOpacity={0.8} />
-                        <stop offset="95%" stopColor="var(--color-commun)" stopOpacity={0.1} />
+                      <linearGradient
+                        id="fillcommun"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor="var(--color-commun)"
+                          stopOpacity={0.8}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="var(--color-commun)"
+                          stopOpacity={0.1}
+                        />
                       </linearGradient>
                     </defs>
                     <CartesianGrid vertical={false} />
@@ -174,8 +258,9 @@ export function Dashboard() {
                       minTickGap={32}
                       tickFormatter={(value) => {
                         const date = new Date(value);
-                        return date.toLocaleDateString("en-US", {
-                          month: "short",
+                        return date.toLocaleDateString("fr", {
+                          year: "numeric",
+                          month: "numeric",
                           day: "numeric",
                         });
                       }}
@@ -186,8 +271,9 @@ export function Dashboard() {
                       content={
                         <ChartTooltipContent
                           labelFormatter={(value) => {
-                            return new Date(value).toLocaleDateString("en-US", {
-                              month: "short",
+                            return new Date(value).toLocaleDateString("fr", {
+                              year: "numeric",
+                              month: "numeric",
                               day: "numeric",
                             });
                           }}
@@ -221,8 +307,9 @@ export function Dashboard() {
                       axisLine={false}
                       tickFormatter={(value) => {
                         const date = new Date(value);
-                        return date.toLocaleDateString("en-US", {
-                          month: "short",
+                        return date.toLocaleDateString("fr", {
+                          year: "numeric",
+                          month: "numeric",
                           day: "numeric",
                         });
                       }}
@@ -231,16 +318,16 @@ export function Dashboard() {
                     <ChartTooltip content={<ChartTooltipContent hideLabel />} />
                     <ChartLegend content={<ChartLegendContent />} />
                     <Bar
-                      dataKey="perso"
-                      stackId="a"
-                      fill="var(--color-perso)"
-                      radius={[0, 0, 4, 4]}
-                    />
-                    <Bar
                       dataKey="commun"
                       stackId="a"
                       fill="var(--color-commun)"
                       radius={[4, 4, 0, 0]}
+                    />
+                    <Bar
+                      dataKey="perso"
+                      stackId="a"
+                      fill="var(--color-perso)"
+                      radius={[0, 0, 4, 4]}
                     />
                   </BarChart>
                 )}

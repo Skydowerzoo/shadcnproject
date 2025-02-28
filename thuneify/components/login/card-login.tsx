@@ -17,7 +17,7 @@ export function CardWithForm() {
   const [showPassword, setShowPassword] = React.useState(false);
 
   return (
-    <Card className="w-full h-full">
+    <Card className="m-auto">
       <CardHeader>
         <CardTitle>Login</CardTitle>
         <CardDescription>Connect to your account</CardDescription>

@@ -3,21 +3,43 @@ import { useState } from "react";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { Calendar } from "../ui/calendar"; // Importer le composant Calendar
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover"; // Importer Popover
+import { format } from "date-fns"; // Pour formater la date
+import { CalendarIcon } from "lucide-react"; // Icône pour le bouton du calendrier
 
 export function ExpensesForm({ onAddExpense }) {
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState<Date | undefined>(undefined); // Gérer la date avec le type Date
   const [perso, setPerso] = useState("");
   const [commun, setCommun] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Vérifier qu'au moins un des deux champs est rempli
+    if (!perso && !commun) {
+      alert("Please fill in at least one of the accounts (Personal or Global).");
+      return;
+    }
+
+    // Vérifier qu'une date est sélectionnée
+    if (!date) {
+      alert("Please select a date.");
+      return;
+    }
+
+    // Créer un nouvel objet dépense
     const newExpense = {
-      date,
-      perso: parseFloat(perso),
-      commun: parseFloat(commun),
+      date: date.toISOString().split("T")[0], // Formater la date en 'YYYY-MM-DD'
+      perso: perso ? parseFloat(perso) : 0,
+      commun: commun ? parseFloat(commun) : 0,
     };
+
+    // Appeler la fonction onAddExpense avec la nouvelle dépense
     onAddExpense(newExpense);
-    setDate("");
+
+    // Réinitialiser les champs du formulaire
+    setDate(undefined);
     setPerso("");
     setCommun("");
   };
@@ -28,17 +50,28 @@ export function ExpensesForm({ onAddExpense }) {
         <h1 className="text-lg font-semibold">Add New Expenses</h1>
       </div>
 
-      {/* Champ date */}
+      {/* Champ date avec Calendar */}
       <div>
         <Label htmlFor="date">Date</Label>
-        <Input
-          type="date"
-          id="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          required
-          className="w-auto"
-        />
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className="w-full justify-start text-left font-normal"
+            >
+              <CalendarIcon className="h-4 w-4" />
+              {date ? format(date, "PPP") : <span className="m-auto">Pick a date</span>}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto">
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={setDate}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* Champ Montent pour compte perso */}
@@ -49,7 +82,6 @@ export function ExpensesForm({ onAddExpense }) {
           id="perso"
           value={perso}
           onChange={(e) => setPerso(e.target.value)}
-          required
           className="w-full"
         />
       </div>
@@ -62,7 +94,6 @@ export function ExpensesForm({ onAddExpense }) {
           id="commun"
           value={commun}
           onChange={(e) => setCommun(e.target.value)}
-          required
           className="w-full"
         />
       </div>
