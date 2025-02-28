@@ -9,27 +9,34 @@ import {
   Sun,
   User,
 } from "lucide-react";
+import { useState } from "react";
 
-import { SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
-
+import { CardWithForm } from "@/components/login/card-login"; // Assurez-vous que le chemin est correct
+import { Button } from "@/components/ui/button";
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
-
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
 import { useTheme } from "next-themes";
-import { Button } from "@/components/ui/button";
 
 // Menu items.
 const items = [
@@ -58,10 +65,22 @@ const items = [
     url: "/account",
     icon: User,
   },
+  {
+    title: "login",
+    url: "#",
+    icon: User,
+  },
 ];
 
 export function AppSidebar() {
   const { setTheme } = useTheme();
+  const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
+
+  const handleLoginClick = (e) => {
+    e.preventDefault();
+    console.log("Login button clicked");
+    setIsLoginDialogOpen(true);
+  };
 
   return (
     <Sidebar>
@@ -76,12 +95,32 @@ export function AppSidebar() {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
+                  {item.title === "login" ? (
+                    <Dialog
+                      open={isLoginDialogOpen}
+                      onOpenChange={setIsLoginDialogOpen}
+                    >
+                      <DialogTrigger asChild>
+                        <SidebarMenuButton asChild>
+                          <a href={item.url} onClick={handleLoginClick}>
+                            <item.icon />
+                            <span>{item.title}</span>
+                          </a>
+                        </SidebarMenuButton>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogTitle></DialogTitle>
+                        {CardWithForm()} {/* Appel de la fonction ici */}
+                      </DialogContent>
+                    </Dialog>
+                  ) : (
+                    <SidebarMenuButton asChild>
+                      <a href={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </a>
+                    </SidebarMenuButton>
+                  )}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>

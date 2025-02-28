@@ -335,14 +335,7 @@ export function Dashboard() {
             </CardContent>
           )
         )}
-        <CardFooter className="flex-col items-start gap-2 text-sm">
-          <div className="flex gap-2 font-medium leading-none">
-            {showTable
-              ? "Showing all expenses in the table."
-              : "Showing total expenses for the selected period."}
-            <TrendingUp className="h-4 w-4" />
-          </div>
-        </CardFooter>
+        
       </Card>
     </div>
   );

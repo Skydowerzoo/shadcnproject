@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
@@ -17,10 +17,12 @@ export function CardWithForm() {
   const [showPassword, setShowPassword] = React.useState(false);
 
   return (
-    <Card className="m-auto">
-      <CardHeader>
-        <CardTitle>Login</CardTitle>
-        <CardDescription>Connect to your account</CardDescription>
+    <Card className="m-auto max-w-xl p-8 shadow-lg border-none">
+      <CardHeader className="text-center">
+        <CardTitle className="text-4xl font-bold">Login</CardTitle>
+        <CardDescription className="text-xl">
+          Connect to your account
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form>
