@@ -9,16 +9,9 @@ import {
   Sun,
   User,
 } from "lucide-react";
-import { useState } from "react";
 
-import { CardWithForm } from "@/components/login/card-login"; // Assurez-vous que le chemin est correct
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -67,20 +60,13 @@ const items = [
   },
   {
     title: "login",
-    url: "#",
+    url: "/login",
     icon: User,
   },
 ];
 
 export function AppSidebar() {
   const { setTheme } = useTheme();
-  const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
-
-  const handleLoginClick = (e: { preventDefault: () => void; }) => {
-    e.preventDefault();
-    console.log("Login button clicked");
-    setIsLoginDialogOpen(true);
-  };
 
   return (
     <Sidebar>
@@ -95,32 +81,14 @@ export function AppSidebar() {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  {item.title === "login" ? (
-                    <Dialog
-                      open={isLoginDialogOpen}
-                      onOpenChange={setIsLoginDialogOpen}
-                    >
-                      <DialogTrigger asChild>
-                        <SidebarMenuButton asChild>
-                          <a href={item.url} onClick={handleLoginClick}>
-                            <item.icon />
-                            <span>{item.title}</span>
-                          </a>
-                        </SidebarMenuButton>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogTitle></DialogTitle>
-                        {CardWithForm()} {/* Appel de la fonction ici */}
-                      </DialogContent>
-                    </Dialog>
-                  ) : (
+                  
                     <SidebarMenuButton asChild>
                       <a href={item.url}>
                         <item.icon />
                         <span>{item.title}</span>
                       </a>
                     </SidebarMenuButton>
-                  )}
+                  
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>

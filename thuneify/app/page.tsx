@@ -1,9 +1,28 @@
+'use client';
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, DollarSign, User, BookOpen, LogIn } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/context/auth-context";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Home() {
+  const auth = useAuth();
+  const user = auth ? auth.user : null;
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!user) {
+      router.push('/login');
+    }
+  }, [user, router]);
+
+  if (!user) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="container mx-auto p-4">
       <Card className="mb-8">

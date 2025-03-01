@@ -1,9 +1,24 @@
-import { CardWithForm } from "@/components/login/card-login";
+"use client";
+
+import Login from "@/components/login/login";
+import { useAuth } from "@/context/auth-context";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Page() {
+  const auth = useAuth() as { user: unknown } | null;
+  const user = auth ? auth.user : null;
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user) {
+      router.push("/");
+    }
+  }, [user, router]);
+
   return (
     <div>
-      <CardWithForm />
+      <Login />
     </div>
   );
 }
