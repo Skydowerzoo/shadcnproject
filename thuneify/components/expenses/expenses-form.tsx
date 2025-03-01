@@ -8,23 +8,27 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover"; // Impo
 import { format } from "date-fns"; // Pour formater la date
 import { CalendarIcon } from "lucide-react"; // Icône pour le bouton du calendrier
 
-export function ExpensesForm({ onAddExpense }) {
+interface ExpensesFormProps {
+  onAddExpense: (expense: { date: string; perso: number; commun: number }) => void;
+}
+
+export function ExpensesForm({ onAddExpense }: ExpensesFormProps) {
   const [date, setDate] = useState<Date | undefined>(undefined); // Gérer la date avec le type Date
   const [perso, setPerso] = useState("");
   const [commun, setCommun] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // Vérifier qu'au moins un des deux champs est rempli
     if (!perso && !commun) {
-      alert("Please fill in at least one of the accounts (Personal or Global).");
+      alert("Veuillez remplir au moins un des comptes (Personnel ou Commun).");
       return;
     }
 
     // Vérifier qu'une date est sélectionnée
     if (!date) {
-      alert("Please select a date.");
+      alert("Veuillez sélectionner une date.");
       return;
     }
 
@@ -47,7 +51,7 @@ export function ExpensesForm({ onAddExpense }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <h1 className="text-lg font-semibold">Add New Expenses</h1>
+        <h1 className="text-lg font-semibold">Ajouter de nouvelles dépenses</h1>
       </div>
 
       {/* Champ date avec Calendar */}
@@ -59,11 +63,11 @@ export function ExpensesForm({ onAddExpense }) {
               variant="outline"
               className="w-full justify-start text-left font-normal"
             >
-              <CalendarIcon className="h-4 w-4" />
-              {date ? format(date, "PPP") : <span className="m-auto">Pick a date</span>}
+              <CalendarIcon className="h-4 w-4 mr-2" />
+              {date ? format(date, "PPP") : <span>Choisir une date</span>}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto">
+          <PopoverContent className="w-auto p-0">
             <Calendar
               mode="single"
               selected={date}
@@ -74,9 +78,9 @@ export function ExpensesForm({ onAddExpense }) {
         </Popover>
       </div>
 
-      {/* Champ Montent pour compte perso */}
+      {/* Champ Montant pour compte perso */}
       <div>
-        <Label htmlFor="perso">Personal Account</Label>
+        <Label htmlFor="perso">Compte Personnel</Label>
         <Input
           type="number"
           id="perso"
@@ -86,9 +90,9 @@ export function ExpensesForm({ onAddExpense }) {
         />
       </div>
 
-      {/* Champ Montent pour compte commun */}
+      {/* Champ Montant pour compte commun */}
       <div>
-        <Label htmlFor="commun">Global Account</Label>
+        <Label htmlFor="commun">Compte Commun</Label>
         <Input
           type="number"
           id="commun"
@@ -101,7 +105,7 @@ export function ExpensesForm({ onAddExpense }) {
       {/* Bouton de soumission */}
       <div>
         <Button type="submit" className="w-full">
-          Add New Information
+          Ajouter une nouvelle information
         </Button>
       </div>
     </form>

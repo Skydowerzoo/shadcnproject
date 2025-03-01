@@ -5,7 +5,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -24,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BarChart2, Eye, EyeOff, Plus, Table, TrendingUp } from "lucide-react"; // Ajout de l'icône Plus
+import { BarChart2, Eye, EyeOff, Plus, Table } from "lucide-react"; // Ajout de l'icône Plus
 import * as React from "react";
 import {
   Area,
@@ -35,7 +34,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { DataTable } from "./data-table-demo";
+import { DataTable } from "./data-table";
 import { ExpensesForm } from "./expenses-form"; // Importer le formulaire
 
 // Importer les composants Dialog
@@ -99,7 +98,7 @@ export function Dashboard() {
 
   const filteredData = data.filter((item) => {
     const date = new Date(item.date);
-    const referenceDate = new Date("2025-02-21");
+    const referenceDate = new Date(); // Utiliser la date d'aujourd'hui
 
     let daysToSubtract = 360;
     if (timeRange === "180d") {

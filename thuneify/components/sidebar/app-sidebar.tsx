@@ -76,7 +76,7 @@ export function AppSidebar() {
   const { setTheme } = useTheme();
   const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
 
-  const handleLoginClick = (e) => {
+  const handleLoginClick = (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     console.log("Login button clicked");
     setIsLoginDialogOpen(true);
