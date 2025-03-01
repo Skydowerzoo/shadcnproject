@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BarChart2, Eye, EyeOff, Plus, Table } from "lucide-react"; // Ajout de l'icône Plus
+import { BarChart2, Eye, EyeOff, Plus, Table } from "lucide-react";
 import * as React from "react";
 import {
   Area,
@@ -35,7 +35,8 @@ import {
   YAxis,
 } from "recharts";
 import { DataTable } from "./data-table";
-import { ExpensesForm } from "./expenses-form"; // Importer le formulaire
+import { ExpensesForm } from "./expenses-form";
+import axios from "axios";
 
 // Importer les composants Dialog
 import {
@@ -46,18 +47,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
-const chartData = [
-  { date: "2024-06-22", perso: 15, commun: 0 },
-  { date: "2024-06-23", perso: 0, commun: 30 },
-  { date: "2024-06-24", perso: 25, commun: 10 },
-  { date: "2024-06-25", perso: 13, commun: 35 },
-  { date: "2024-06-26", perso: 40, commun: 15 },
-  { date: "2024-06-27", perso: 30, commun: 20 },
-  { date: "2024-12-28", perso: 36, commun: 52 },
-  { date: "2024-11-10", perso: 36, commun: 52 },
-  { date: "2025-02-10", perso: 36, commun: 52 },
-];
 
 const chartConfig = {
   perso: {
@@ -78,22 +67,39 @@ type Expense = {
 
 export function Dashboard() {
   const [timeRange, setTimeRange] = React.useState("360d");
-  const [data, setData] = React.useState(chartData);
+  const [data, setData] = React.useState<Expense[]>([]);
   const [chartType, setChartType] = React.useState<"area" | "bar">("area");
   const [showChart, setShowChart] = React.useState(true);
   const [showTable, setShowTable] = React.useState(false);
 
-  const handleAddExpense = (newExpense: Expense) => {
-    setData((prevData) => {
-      const updatedData = [...prevData, newExpense];
-
-      // Trier les données par date
-      return updatedData.sort((a, b) => {
-        const dateA = new Date(a.date).getTime(); // Convertir en timestamp
-        const dateB = new Date(b.date).getTime(); // Convertir en timestamp
-        return dateA - dateB; // Comparer les timestamps
+  React.useEffect(() => {
+    // Récupérer les dépenses depuis le backend
+    axios.get('http://localhost:5000/api/expenses')
+      .then(response => {
+        setData(response.data);
+      })
+      .catch(error => {
+        console.error('Erreur lors de la récupération des dépenses :', error);
       });
-    });
+  }, []);
+
+  const handleAddExpense = (newExpense: Expense) => {
+    axios.post('http://localhost:5000/api/expenses', newExpense)
+      .then(response => {
+        setData((prevData) => {
+          const updatedData = [...prevData, response.data];
+
+          // Trier les données par date
+          return updatedData.sort((a, b) => {
+            const dateA = new Date(a.date).getTime(); // Convertir en timestamp
+            const dateB = new Date(b.date).getTime(); // Convertir en timestamp
+            return dateA - dateB; // Comparer les timestamps
+          });
+        });
+      })
+      .catch(error => {
+        console.error('Erreur lors de l\'ajout de la dépense :', error);
+      });
   };
 
   const filteredData = data.filter((item) => {
