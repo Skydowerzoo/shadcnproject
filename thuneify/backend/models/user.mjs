@@ -1,70 +1,42 @@
-import pool from '../config/db.mjs';
-import mongoose from 'mongoose';
+import { pool } from '../config/db.mjs';
 
-const createUserTable = async () => {
-  const query = `
-    CREATE TABLE IF NOT EXISTS users (
-      id SERIAL PRIMARY KEY,
-      firstname VARCHAR(100),
-      lastname VARCHAR(100),
-      date DATE,
-      email VARCHAR(255) NOT NULL UNIQUE,
-      phone VARCHAR(20),
-      password VARCHAR(255),
-      address TEXT,
-      bio TEXT
-    )
-  `;
-  await pool.query(query);
+const getUserByEmail = async (email) => {
+  try {
+    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    const user = result.rows[0];
+    console.log('Utilisateur trouvé dans la base de données:', user); // Ajoutez ce log
+    return user;
+  } catch (err) {
+    console.error('Erreur lors de la recherche de l\'utilisateur:', err); // Ajoutez ce log
+    throw err;
+  }
 };
 
 const getUserById = async (id) => {
-  const query = 'SELECT * FROM users WHERE id = $1';
-  const result = await pool.query(query, [id]);
-  return result.rows[0];
+  try {
+    const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+    const user = result.rows[0];
+    console.log('Utilisateur trouvé par ID dans la base de données:', user); // Ajoutez ce log
+    return user;
+  } catch (err) {
+    console.error('Erreur lors de la recherche de l\'utilisateur par ID:', err); // Ajoutez ce log
+    throw err;
+  }
 };
 
-const userSchema = new mongoose.Schema({
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    // Ajoutez d'autres champs si nécessaire
-  });
-  
-  const User = mongoose.model('User', userSchema);
-  
-  const getUserByEmail = async (email) => {
-    try {
-      const user = await User.findOne({ email });
-      console.log('Utilisateur trouvé dans la base de données:', user); // Ajoutez ce log
-      return user;
-    } catch (err) {
-      console.error('Erreur lors de la recherche de l\'utilisateur:', err); // Ajoutez ce log
-      throw err;
-    }
-  };
-  
-  export { getUserByEmail };
-
-const createUser = async (firstName, lastName, date, email, phone, password, address, bio) => {
-  const query = `
-    INSERT INTO users (firstname, lastname, date, email, phone, password, address, bio)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-    RETURNING *
-  `;
-  const result = await pool.query(query, [firstName, lastName, date, email, phone, password, address, bio]);
-  return result.rows[0];
+const createUser = async (firstname, lastname, date, email, phone, password, address, bio) => {
+  try {
+    const result = await pool.query(
+      'INSERT INTO users (firstname, lastname, date, email, phone, password, address, bio) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+      [firstname, lastname, date, email, phone, password, address, bio]
+    );
+    const user = result.rows[0];
+    console.log('Nouvel utilisateur créé:', user); // Ajoutez ce log
+    return user;
+  } catch (err) {
+    console.error('Erreur lors de la création de l\'utilisateur:', err); // Ajoutez ce log
+    throw err;
+  }
 };
 
-const updateUser = async (id, userData) => {
-  const { firstName, lastName, date, email, phone, password, address, bio } = userData;
-  const query = `
-    UPDATE users
-    SET firstname = $1, lastname = $2, date = $3, email = $4, phone = $5, password = $6, address = $7, bio = $8
-    WHERE id = $9
-    RETURNING *
-  `;
-  const result = await pool.query(query, [firstName, lastName, date, email, phone, password, address, bio, id]);
-  return result.rows[0];
-};
-
-export { createUserTable, getUserById, getUserByEmail, createUser, updateUser };
+export { getUserByEmail, getUserById, createUser };

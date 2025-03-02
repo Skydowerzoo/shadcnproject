@@ -21,6 +21,7 @@ export default function Login() {
         email,
         password,
       });
+      console.log('Réponse de connexion:', response.data); // Ajoutez ce log
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
         router.push('/'); // Rediriger vers la page d'accueil après la connexion
@@ -28,6 +29,7 @@ export default function Login() {
         setError('Email ou mot de passe incorrect.');
       }
     } catch (err) {
+      console.error('Erreur lors de la connexion:', err); // Ajoutez ce log
       setError('Erreur lors de la connexion. Veuillez réessayer.');
     }
   };

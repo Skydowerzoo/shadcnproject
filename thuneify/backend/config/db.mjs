@@ -9,4 +9,14 @@ const pool = new Pool({
   port: 5432,
 });
 
-export default pool;
+const connectDB = async () => {
+  try {
+    await pool.connect();
+    console.log('PostgreSQL connected');
+  } catch (err) {
+    console.error('PostgreSQL connection error:', err);
+    process.exit(1);
+  }
+};
+
+export { pool, connectDB };

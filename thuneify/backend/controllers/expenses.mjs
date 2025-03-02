@@ -1,4 +1,4 @@
-import pool from '../config/db.mjs';
+import { pool } from '../config/db.mjs'; // Corrigez l'importation ici
 
 // Récupérer toutes les dépenses
 const getExpenses = async (req, res) => {

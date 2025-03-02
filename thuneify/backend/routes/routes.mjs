@@ -1,6 +1,6 @@
 import express from 'express';
 import { getExpenses, addExpense, updateExpense, deleteExpense } from '../controllers/expenses.mjs';
-import { loginUser } from '../controllers/user.mjs';
+import { loginUser, getUser } from '../controllers/user.mjs';
 
 const router = express.Router();
 
@@ -11,5 +11,6 @@ router.delete('/expenses/:id', deleteExpense);
 
 // Routes utilisateur
 router.post('/login', loginUser);
+router.get('/users/:id', getUser);
 
 export default router;
