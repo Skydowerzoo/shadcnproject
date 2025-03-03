@@ -24,17 +24,17 @@ const getUserById = async (id) => {
   }
 };
 
-const createUser = async (firstname, lastname, date, email, phone, password, address, bio) => {
+const createUser = async (firstname, lastname, email, password) => {
   try {
     const result = await pool.query(
-      'INSERT INTO users (firstname, lastname, date, email, phone, password, address, bio) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-      [firstname, lastname, date, email, phone, password, address, bio]
+      'INSERT INTO users (firstname, lastname, email, password) VALUES ($1, $2, $3, $4) RETURNING *',
+      [firstname, lastname, email, password]
     );
     const user = result.rows[0];
-    console.log('Nouvel utilisateur créé:', user); // Ajoutez ce log
+    console.log('Nouvel utilisateur créé:', user);
     return user;
   } catch (err) {
-    console.error('Erreur lors de la création de l\'utilisateur:', err); // Ajoutez ce log
+    console.error('Erreur lors de la création de l\'utilisateur:', err);
     throw err;
   }
 };

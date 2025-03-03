@@ -1,36 +1,32 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import axios from 'axios';
+import { useAuth } from '@/context/auth-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import Link from 'next/link';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const router = useRouter();
+  const { login, loading } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email || !password) {
+      setError('Veuillez remplir tous les champs.');
+      return;
+    }
+
     try {
-      const response = await axios.post('http://localhost:5000/api/login', {
-        email,
-        password,
-      });
-      console.log('Réponse de connexion:', response.data); // Ajoutez ce log
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-        router.push('/'); // Rediriger vers la page d'accueil après la connexion
-      } else {
-        setError('Email ou mot de passe incorrect.');
-      }
+      await login(email, password);
     } catch (err) {
-      console.error('Erreur lors de la connexion:', err); // Ajoutez ce log
-      setError('Erreur lors de la connexion. Veuillez réessayer.');
+      console.error('Erreur lors de la connexion:', err);
+      setError('Email ou mot de passe incorrect.');
     }
   };
 
@@ -51,6 +47,7 @@ export default function Login() {
                   placeholder="m@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
                 />
               </div>
               <div className="flex flex-col space-y-1.5">
@@ -61,12 +58,30 @@ export default function Login() {
                   placeholder="Votre mot de passe"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
                 />
               </div>
-              {error && <p className="text-red-500">{error}</p>}
+              {error && (
+                <p className="text-red-500 text-sm">{error}</p>
+              )}
             </div>
-            <CardFooter className="flex justify-end mt-4">
-              <Button type="submit">Connexion</Button>
+            <CardFooter className="flex flex-col space-y-4 items-center mt-4">
+              <Button 
+                type="submit" 
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? 'Connexion...' : 'Connexion'}
+              </Button>
+              <div className="text-sm text-muted-foreground">
+                Pas encore de compte ?{' '}
+                <Link 
+                  href="/register" 
+                  className="text-primary hover:underline"
+                >
+                  Créer un compte
+                </Link>
+              </div>
             </CardFooter>
           </form>
         </CardContent>

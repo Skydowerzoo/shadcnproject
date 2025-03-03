@@ -13,16 +13,6 @@ export default function Home() {
   const user = auth ? auth.user : null;
   const router = useRouter();
 
-  useEffect(() => {
-    if (!user) {
-      router.push('/login');
-    }
-  }, [user, router]);
-
-  if (!user) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <div className="container mx-auto p-4">
       <Card className="mb-8">

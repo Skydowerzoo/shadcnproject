@@ -8,6 +8,8 @@ import {
   ShoppingBasket,
   Sun,
   User,
+  LogIn,
+  LogOut,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -30,9 +32,10 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useTheme } from "next-themes";
+import { useAuth } from "@/context/auth-context";
 
 // Menu items.
-const items = [
+const baseItems = [
   {
     title: "Home",
     url: "/",
@@ -58,15 +61,31 @@ const items = [
     url: "/account",
     icon: User,
   },
-  {
-    title: "login",
-    url: "/login",
-    icon: User,
-  },
 ];
 
 export function AppSidebar() {
   const { setTheme } = useTheme();
+  const { user, logout, isAuthenticated } = useAuth();
+
+  const items = [
+    ...baseItems,
+    ...(isAuthenticated
+      ? [
+          {
+            title: "Logout",
+            url: "#",
+            icon: LogOut,
+            onClick: logout,
+          },
+        ]
+      : [
+          {
+            title: "Login",
+            url: "/login",
+            icon: LogIn,
+          },
+        ]),
+  ];
 
   return (
     <Sidebar>
@@ -81,14 +100,22 @@ export function AppSidebar() {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  
-                    <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild>
+                    {item.onClick ? (
+                      <button
+                        onClick={item.onClick}
+                        className="flex items-center w-full"
+                      >
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </button>
+                    ) : (
                       <a href={item.url}>
                         <item.icon />
                         <span>{item.title}</span>
                       </a>
-                    </SidebarMenuButton>
-                  
+                    )}
+                  </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>

@@ -10,11 +10,6 @@ export default function Page() {
   const user = auth ? auth.user : null;
   const router = useRouter();
 
-  useEffect(() => {
-    if (user) {
-      router.push("/");
-    }
-  }, [user, router]);
 
   return (
     <div>

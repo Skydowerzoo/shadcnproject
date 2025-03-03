@@ -1,8 +1,8 @@
-'use client'
+"use client";
 
-import { useAuth } from '@/context/auth-context';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useAuth } from "@/context/auth-context";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { GroceryList } from "@/components/grocery/grocery-liste";
 
 export default function Expenses() {
@@ -10,19 +10,11 @@ export default function Expenses() {
   const user = auth ? auth.user : null;
   const router = useRouter();
 
-  useEffect(() => {
-    if (!user) {
-      router.push('/login');
-    }
-  }, [user, router]);
 
-  if (!user) {
-    return <div>Loading...</div>;
-  }
 
   return (
-    <div>
-      <GroceryList />
-    </div>
+
+        <GroceryList />
+
   );
 }

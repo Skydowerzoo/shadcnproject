@@ -45,7 +45,7 @@ const loginUser = async (req, res) => {
     }
 
     const token = jwt.sign({ id: user.id }, 'votre_secret_jwt', { expiresIn: '1h' });
-    res.status(200).json({ token });
+    res.status(200).json({ token: token, user: user });
   } catch (err) {
     console.error('Erreur lors de la connexion:', err); // Ajoutez ce log
     res.status(500).json({ error: err.message });
