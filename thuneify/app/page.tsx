@@ -13,11 +13,22 @@ import { useAuth } from "@/context/auth-context";
 import { BookOpen, DollarSign, LogIn, ShoppingCart, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 
 export default function Home() {
   const auth = useAuth();
   const user = auth ? auth.user : null;
   const router = useRouter();
+
+  // Exemple de données pour le dashboard (à remplacer par vos vraies données)
+  const expensesData = [
+    { name: "Jan", total: 1200 },
+    { name: "Fév", total: 900 },
+    { name: "Mar", total: 1600 },
+    { name: "Avr", total: 1100 },
+    { name: "Mai", total: 1500 },
+    { name: "Juin", total: 1200 },
+  ];
 
   return (
     <div className="container mx-auto p-4">
@@ -94,6 +105,46 @@ export default function Home() {
           </Carousel>
         </CardContent>
       </Card>
+
+      {/* Nouvelle section Dashboard */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-8">
+        <Card className="col-span-2">
+          <CardHeader>
+            <CardTitle>Aperçu des Dépenses</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={350}>
+              <BarChart data={expensesData}>
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Bar dataKey="total" fill="#adfa1d" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Résumé</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Total du mois</span>
+                <span className="font-bold">1,500 €</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Moyenne mensuelle</span>
+                <span className="font-bold">1,250 €</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Plus grosse dépense</span>
+                <span className="font-bold">1,600 €</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
