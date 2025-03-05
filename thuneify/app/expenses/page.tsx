@@ -1,27 +1,25 @@
-'use client';
+"use client";
 
-import { useAuth } from '@/context/auth-context';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 import { Dashboard } from "@/components/expenses/expenses-dashboard";
+import { useAuth } from "@/context/auth-context";
+
 
 export default function Expenses() {
-  const auth = useAuth() as { user: unknown } | null;
-  const user = auth ? auth.user : null;
-  const router = useRouter();
+  const { user, isAuthenticated } = useAuth();
 
-  useEffect(() => {
-    if (!user) {
-      router.push('/login');
-    }
-  }, [user, router]);
-
-  if (!user) {
-    return <div>Loading...</div>;
+  if (!isAuthenticated || !user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin h-8 w-8 rounded-full border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   return (
-    <div>
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">
+        Bienvenue {user.firstname} - Dépenses
+      </h1>
       <Dashboard />
     </div>
   );

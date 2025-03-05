@@ -9,71 +9,90 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import {
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+} from "@/components/ui/chart";
 import { useAuth } from "@/context/auth-context";
 import axios from "axios";
 import { BookOpen, DollarSign, LogIn, ShoppingCart, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
-// Ajouter le type Expense
 type Expense = {
   date: string;
   perso: number;
   commun: number;
 };
 
-export default function Home() {
-  const auth = useAuth();
-  const user = auth ? auth.user : null;
-  const router = useRouter();
+const chartConfig = {
+  perso: {
+    label: "Personnel",
+    color: "hsl(var(--chart-1))",
+  },
+  commun: {
+    label: "Commun",
+    color: "hsl(var(--chart-2))",
+  },
+} as const;
 
-  // Ajouter l'état pour les données
+export default function Home() {
+  const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [expensesData, setExpensesData] = useState<
-    {
-      name: string;
-      total: number;
-      perso: number;
-      commun: number;
-    }[]
+    { name: string; total: number; perso: number; commun: number }[]
   >([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Ajouter useEffect pour charger les données
   useEffect(() => {
-    const fetchExpenses = async () => {
-      try {
-        const response = await axios.get<Expense[]>(
-          "http://localhost:5000/api/expenses"
-        );
-        const transformedData = transformExpensesData(response.data);
-        setExpensesData(transformedData);
-      } catch (error) {
-        console.error("Erreur lors de la récupération des dépenses:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchExpenses();
+    setMounted(true);
   }, []);
 
-  // Fonction pour transformer les données
-  const transformExpensesData = (data: Expense[]) => {
+  useEffect(() => {
+    if (mounted && !isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated, router, mounted]);
+
+  useEffect(() => {
+    if (mounted && isAuthenticated) {
+      const fetchExpenses = async () => {
+        try {
+          const response = await axios.get<Expense[]>(
+            "http://localhost:5000/api/expenses"
+          );
+          setExpensesData(transformExpensesData(response.data));
+        } catch (error) {
+          console.error("Erreur lors de la récupération des dépenses:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchExpenses();
+    }
+  }, [mounted, isAuthenticated]);
+
+  if (!mounted || !isAuthenticated) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  function transformExpensesData(data: Expense[]) {
     const monthlyData = data.reduce((acc, expense) => {
       const date = new Date(expense.date);
-      const month = date.toLocaleString("fr-FR", { month: "short" });
+      const month = date.toLocaleString("fr-FR", { month: "long" });
 
       if (!acc[month]) {
-        acc[month] = {
-          name: month,
-          total: 0,
-          perso: 0,
-          commun: 0,
-        };
+        acc[month] = { name: month, total: 0, perso: 0, commun: 0 };
       }
-
       acc[month].perso += Number(expense.perso || 0);
       acc[month].commun += Number(expense.commun || 0);
       acc[month].total = acc[month].perso + acc[month].commun;
@@ -82,12 +101,10 @@ export default function Home() {
     }, {} as Record<string, { name: string; total: number; perso: number; commun: number }>);
 
     return Object.values(monthlyData);
-  };
+  }
 
-  // Fonction pour calculer les statistiques
-  const calculateStats = () => {
+  function calculateStats() {
     if (expensesData.length === 0) return { total: 0, moyenne: 0, max: 0 };
-
     const currentMonth = new Date().toLocaleString("fr-FR", { month: "short" });
     const totalMois =
       expensesData.find((d) => d.name === currentMonth)?.total || 0;
@@ -101,7 +118,7 @@ export default function Home() {
       moyenne: Math.round(moyenne),
       max: Math.round(max),
     };
-  };
+  }
 
   const stats = calculateStats();
 
@@ -181,7 +198,6 @@ export default function Home() {
         </CardContent>
       </Card>
 
-      {/* Section Dashboard modifiée */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-8">
         <Card className="col-span-2">
           <CardHeader>
@@ -193,24 +209,88 @@ export default function Home() {
                 Chargement...
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height={350}>
-                <BarChart data={expensesData}>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Bar
-                    dataKey="perso"
-                    name="Personnel"
-                    fill="#adfa1d"
-                    stackId="a"
+              <ChartContainer config={chartConfig}>
+                <BarChart width={564} height={317} data={expensesData}>
+                  <defs>
+                    <linearGradient id="fillPerso" x1="0" y1="0" x2="0" y2="1">
+                      <stop
+                        offset="5%"
+                        stopColor="hsl(var(--chart-1))"
+                        stopOpacity={0.8}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor="hsl(var(--chart-1))"
+                        stopOpacity={0.1}
+                      />
+                    </linearGradient>
+                    <linearGradient id="fillCommun" x1="0" y1="0" x2="0" y2="1">
+                      <stop
+                        offset="5%"
+                        stopColor="hsl(var(--chart-2))"
+                        stopOpacity={0.8}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor="hsl(var(--chart-2))"
+                        stopOpacity={0.1}
+                      />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid vertical={false} />
+                  <XAxis
+                    dataKey="name"
+                    tickLine={false}
+                    tickMargin={10}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    tickFormatter={(value) => `${value} €`}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <ChartTooltip
+                    content={({ active, payload }) => {
+                      if (!active || !payload) return null;
+                      return (
+                        <div className="rounded-lg border bg-background p-2 shadow-sm">
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="flex flex-col">
+                              <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                Personnel
+                              </span>
+                              <span className="font-bold text-muted-foreground">
+                                {payload[0]?.value}€
+                              </span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                Commun
+                              </span>
+                              <span className="font-bold text-muted-foreground">
+                                {payload[1]?.value}€
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }}
                   />
                   <Bar
                     dataKey="commun"
-                    name="Commun"
-                    fill="#2563eb"
                     stackId="a"
+                    fill="url(#fillCommun)"
+                    radius={[4, 4, 0, 0]}
                   />
+                  <Bar
+                    dataKey="perso"
+                    stackId="a"
+                    fill="url(#fillPerso)"
+                    radius={[0, 0, 4, 4]}
+                  />
+                  <ChartLegend content={<ChartLegendContent />} />
                 </BarChart>
-              </ResponsiveContainer>
+              </ChartContainer>
             )}
           </CardContent>
         </Card>

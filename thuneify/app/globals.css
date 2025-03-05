@@ -8,42 +8,104 @@ body {
 
 @layer base {
   :root {
-    --background: 0 0% 85%; /* Fond gris plus sombre */
-    --foreground: 240 10% 15%; /* Texte plus foncé pour un meilleur contraste */
-    --card: 0 0% 80%; /* Fond de carte gris plus sombre */
-    --card-foreground: 240 10% 15%; /* Texte des cartes */
-    --popover: 0 0% 82%; /* Fond des popovers gris plus sombre */
-    --popover-foreground: 240 10% 15%; /* Texte des popovers */
-    --primary: 240 5% 25%; /* Couleur primaire plus foncée */
-    --primary-foreground: 0 0% 98%; /* Texte sur fond primaire */
-    --secondary: 240 4% 85%; /* Couleur secondaire plus foncée */
-    --secondary-foreground: 240 5% 25%; /* Texte sur fond secondaire */
-    --muted: 240 4% 85%; /* Couleur muette plus foncée */
-    --muted-foreground: 240 3.8% 45%; /* Texte muet */
-    --accent: 240 4% 85%; /* Couleur d'accentuation plus foncée */
-    --accent-foreground: 240 5% 25%; /* Texte sur fond accentué */
-    --destructive: 0 70% 45%; /* Rouge moins vif et plus sombre */
-    --destructive-foreground: 0 0% 98%; /* Texte sur fond destructeur */
-    --border: 240 5% 75%; /* Bordure plus sombre */
-    --input: 240 5% 75%; /* Champ de saisie plus sombre */
-    --ring: 240 10% 15%; /* Couleur du focus ring */
+    /* Couleurs de base */
+    --background: 0 0% 96%;
+    --foreground: 240 10% 15%;
+    
+    /* Composants principaux */
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 15%;
+    
+    /* Couleurs sémantiques */
+    --primary: 240 5% 25%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4% 90%;
+    --secondary-foreground: 240 5% 25%;
+    
+    /* États et variantes */
+    --muted: 240 4% 90%;
+    --muted-foreground: 240 3.8% 45%;
+    --accent: 240 4% 90%;
+    --accent-foreground: 240 5% 25%;
+    --destructive: 0 70% 45%;
+    --destructive-foreground: 0 0% 98%;
+    
+    /* Bordures et contrôles */
+    --border: 240 5% 84%;
+    --input: 240 5% 84%;
+    --ring: 240 5% 65%;
 
-    --chart-1: 12 76% 61%; /* Couleurs des graphiques inchangées */
+    /* Graphiques */
+    --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
-    --radius: 0.5rem; /* Rayon des coins inchangé */
+    
+    /* Styles globaux */
+    --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 82%; /* Fond de la barre latérale gris plus sombre */
-    --sidebar-foreground: 240 5% 25%; /* Texte de la barre latérale */
-    --sidebar-primary: 240 5% 25%; /* Couleur primaire de la barre latérale */
-    --sidebar-primary-foreground: 0 0% 98%; /* Texte sur fond primaire de la barre latérale */
-    --sidebar-accent: 240 4% 85%; /* Couleur d'accentuation de la barre latérale */
-    --sidebar-accent-foreground: 240 5% 25%; /* Texte sur fond accentué de la barre latérale */
-    --sidebar-border: 240 5% 75%; /* Bordure de la barre latérale plus sombre */
-    --sidebar-ring: 240 10% 15%; /* Couleur du focus ring de la barre latérale */
-    --sidebar-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); /* Ombre inchangée */
+    /* Barre latérale */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 240 5% 25%;
+    --sidebar-primary: 240 5% 25%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4% 90%;
+    --sidebar-accent-foreground: 240 5% 25%;
+    --sidebar-border: 240 5% 84%;
+    --sidebar-ring: 240 10% 15%;
+    --sidebar-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
+  }
+
+  .pink {
+    /* Couleurs de base */
+    --background: 330 100% 97%;
+    --foreground: 340 40% 20%;
+    
+    /* Composants principaux */
+    --card: 0 0% 100%;
+    --card-foreground: 340 40% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 340 40% 20%;
+    
+    /* Couleurs sémantiques */
+    --primary: 340 80% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 340 100% 95%;
+    --secondary-foreground: 340 60% 35%;
+    
+    /* États et variantes */
+    --muted: 340 30% 92%;
+    --muted-foreground: 340 30% 50%;
+    --accent: 340 70% 90%;
+    --accent-foreground: 340 60% 35%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 98%;
+    
+    /* Bordures et contrôles */
+    --border: 340 70% 90%;
+    --input: 340 70% 90%;
+    --ring: 340 80% 70%;
+
+    /* Graphiques */
+    --chart-1: 340 80% 60%;
+    --chart-2: 280 70% 60%;
+    --chart-3: 200 70% 60%;
+    --chart-4: 160 70% 50%;
+    --chart-5: 30 80% 60%;
+    
+    /* Barre latérale */
+    --sidebar-background: 340 100% 98%;
+    --sidebar-foreground: 340 60% 35%;
+    --sidebar-primary: 340 80% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 340 70% 90%;
+    --sidebar-accent-foreground: 340 60% 35%;
+    --sidebar-border: 340 70% 90%;
+    --sidebar-ring: 340 80% 70%;
+    --sidebar-shadow: 0 4px 8px -2px rgba(224, 90, 150, 0.1), 0 2px 4px -1px rgba(224, 90, 150, 0.06);
   }
 
   .dark {
@@ -81,9 +143,8 @@ body {
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
-    --sidebar-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); /* Added shadow */
+    --sidebar-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.15);
   }
-
 }
 
 @layer base {
@@ -91,6 +152,27 @@ body {
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground transition-colors duration-300;
+    font-family: 'Inter', Arial, sans-serif;
+  }
+  ::selection {
+    @apply bg-primary/20 text-foreground;
+  }
+}
+
+@layer base {
+  /* Theme: light (default) */
+  :root {
+    /* vos variables light par défaut */
+  }
+
+  /* Theme: dark */
+  .dark {
+    /* vos variables dark existantes */
+  }
+
+  /* Theme: pink */
+  .pink {
+    /* vos variables pink */
   }
 }

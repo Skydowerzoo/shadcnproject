@@ -1,122 +1,95 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { useRouter } from "next/navigation";
 import axios from "axios";
+import { useRouter } from "next/navigation";
+import { createContext, useContext, useEffect, useState } from "react";
 
-// Définition des types
-interface User {
-  date: any;
-  phone:number;
-  bio: string;
-  id: number;
-  firstname: string;
-  lastname: string;
+type User = {
+  id: string;
   email: string;
-}
+  firstname: string;
+};
 
-interface AuthContextType {
+type AuthContextType = {
   user: User | null;
-  isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (token: string, userData: User) => void;
   logout: () => void;
-  loading: boolean;
-}
+  isAuthenticated: boolean;
+};
 
-// Création du contexte
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | null>(null);
 
-// Provider Component
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // Vérification de l'authentification au chargement
+  // Vérifier l'authentification au chargement
   useEffect(() => {
-    const checkAuth = async () => {
-      const token = localStorage.getItem("token");
-      
-      if (!token) {
-        setLoading(false);
-        router.push("/login");
-        return;
-      }
+    console.log("AuthProvider - Initialisation du contexte");
 
+    const userData = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
+
+    console.log("Données trouvées:", {
+      hasUserData: !!userData,
+      hasToken: !!token,
+    });
+
+    if (userData && token) {
       try {
-        const response = await axios.get("http://localhost:5000/api/users/1", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const parsedUser = JSON.parse(userData);
+        console.log("Utilisateur restauré:", parsedUser);
 
-        if (response.data) {
-          setUser(response.data);
-          setIsAuthenticated(true);
-        }
-      } catch (error) {
-        console.error("Erreur d'authentification:", error);
-        localStorage.removeItem("token");
-        router.push("/login");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, [router]);
-
-  // Fonction de connexion
-  const login = async (email: string, password: string) => {
-    try {
-      const response = await axios.post("http://localhost:5000/api/login", {
-        email,
-        password,
-      });
-
-      if (response.data.token) {
-        localStorage.setItem("token", response.data.token);
-        setUser(response.data.user);
+        setUser(parsedUser);
         setIsAuthenticated(true);
-        router.push("/");
+        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+        console.log("État mis à jour - Authentifié");
+      } catch (error) {
+        console.error(
+          "Erreur lors de la restauration de l'authentification:",
+          error
+        );
       }
-    } catch (error) {
-      console.error("Erreur de connexion:", error);
-      throw error;
+    } else {
+      console.log("Aucune donnée d'authentification trouvée");
     }
+
+    setIsLoading(false);
+  }, []);
+
+  const login = (token: string, userData: User) => {
+    setUser(userData);
+    setIsAuthenticated(true);
+    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("token", token);
+    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
   };
 
-  // Fonction de déconnexion
   const logout = () => {
-    localStorage.removeItem("token");
     setUser(null);
     setIsAuthenticated(false);
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    delete axios.defaults.headers.common["Authorization"];
     router.push("/login");
   };
 
-  if (loading) {
-    return <div>Chargement...</div>;
-  }
-
   return (
-    <AuthContext.Provider 
-      value={{ 
-        user, 
-        isAuthenticated, 
-        login, 
-        logout,
-        loading 
-      }}
-    >
+    <AuthContext.Provider value={{ user, isAuthenticated, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
-};
+}
 
-// Hook personnalisé pour utiliser le contexte
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth doit être utilisé dans un AuthProvider");
+  if (!context) {
+    throw new Error(
+      "useAuth doit être utilisé à l'intérieur d'un AuthProvider"
+    );
   }
   return context;
 };
