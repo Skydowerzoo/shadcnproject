@@ -24,11 +24,11 @@ const getUserById = async (id) => {
   }
 };
 
-const createUser = async (firstname, lastname, email, password) => {
+const createUser = async (firstname, lastname, date, email, phone, password, address, bio) => {
   try {
     const result = await pool.query(
-      'INSERT INTO users (firstname, lastname, email, password) VALUES ($1, $2, $3, $4) RETURNING *',
-      [firstname, lastname, email, password]
+      'INSERT INTO users (firstname, lastname, date, email, phone, password, address, bio) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+      [firstname, lastname, date, email, phone, password, address, bio]
     );
     const user = result.rows[0];
     console.log('Nouvel utilisateur créé:', user);
@@ -39,4 +39,27 @@ const createUser = async (firstname, lastname, email, password) => {
   }
 };
 
-export { getUserByEmail, getUserById, createUser };
+async function updateUserById(id, userData) {
+  try {
+    const fields = Object.keys(userData);
+    const setClause = fields.map((field, index) => `${field} = $${index + 1}`).join(', ');
+    const values = Object.values(userData);
+    
+    const query = `UPDATE users SET ${setClause} WHERE id = $${fields.length + 1} RETURNING *`;
+    values.push(id);
+    
+    console.log('Query de mise à jour:', query);
+    console.log('Valeurs:', values);
+    
+    const result = await pool.query(query, values);
+    const updatedUser = result.rows[0];
+    
+    console.log('Utilisateur mis à jour:', updatedUser);
+    return updatedUser;
+  } catch (err) {
+    console.error('Erreur lors de la mise à jour de l\'utilisateur:', err);
+    throw err;
+  }
+}
+
+export { getUserByEmail, getUserById, createUser, updateUserById };

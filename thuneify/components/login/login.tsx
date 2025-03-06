@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner"; // Import du toast de shadcn/ui
 import { useAuth } from "@/context/auth-context";
 import axios from "axios";
 import Link from "next/link";
@@ -20,25 +21,37 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [isLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Corrigé pour rendre le bouton de chargement fonctionnel
   const { login } = useAuth();
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError("");
     
     try {
-      const response = await axios.post("http://localhost:5000/api/login", {
+      // Correction de l'URL de l'API
+      const response = await axios.post("http://localhost:5000/api/users/login", {
         email,
         password,
       });
   
       const { token, user } = response.data;
       login(token, user);
+      
+      toast("Connexion réussie", {
+        description: `Bonjour ${user.firstname || 'utilisateur'} !`,
+      });
+      
       router.push("/");
     } catch (error) {
       console.error("Erreur de connexion:", error);
       setError("Email ou mot de passe incorrect");
+      
+    
+    } finally {
+      setIsLoading(false);
     }
   };
 

@@ -9,6 +9,7 @@ import {
 } from "../components/ui/sidebar";
 import { AuthProvider } from "../context/auth-context";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -36,6 +37,7 @@ export default function RootLayout({
                 </header>
                 <main className="flex flex-1 flex-col gap-4 p-4">
                   {children}
+                  <Toaster />
                 </main>
               </SidebarInset>
             </SidebarProvider>

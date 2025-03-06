@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { getUserByEmail, createUser, getUserById } from '../models/user.mjs';
+// CORRECTION: Importer updateUserById et pool
+import { getUserByEmail, createUser, getUserById, updateUserById } from '../models/user.mjs';
 
 const registerUser = async (req, res) => {
   const { firstname, lastname, date, email, phone, password, address, bio } = req.body;
@@ -63,6 +64,56 @@ const getUser = async (req, res) => {
   } catch (err) {
     console.error('Erreur lors de la récupération de l\'utilisateur:', err); // Ajoutez ce log
     res.status(500).json({ error: err.message });
+  }
+};
+
+export const updateUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const {
+      firstname,
+      lastname,
+      date,
+      email,
+      phone,
+      password,
+      address,
+      bio
+    } = req.body;
+
+    console.log("Tentative de mise à jour pour l'utilisateur:", userId);
+    console.log("Données reçues:", req.body);
+
+    // Solution plus simple : utiliser la fonction du modèle
+    const userData = {
+      firstname,
+      lastname,
+      date,
+      email,
+      phone,
+      address,
+      bio
+    };
+
+    // Gérer le mot de passe séparément
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      userData.password = hashedPassword;
+    }
+
+    const updatedUser = await updateUserById(userId, userData);
+    
+    if (!updatedUser) {
+      return res.status(404).json({ error: "Utilisateur introuvable." });
+    }
+
+    // Ne pas renvoyer le mot de passe
+    const { password: _, ...userWithoutPassword } = updatedUser;
+    return res.status(200).json(userWithoutPassword);
+    
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour de l'utilisateur :", error);
+    return res.status(500).json({ error: "Erreur serveur lors de la mise à jour." });
   }
 };
 
