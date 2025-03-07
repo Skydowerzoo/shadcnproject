@@ -2,7 +2,13 @@
 
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 type User = {
   id: string;
@@ -10,11 +16,13 @@ type User = {
   firstname: string;
 };
 
+// Modifions d'abord le type pour inclure isLoading
 type AuthContextType = {
   user: User | null;
   login: (token: string, userData: User) => void;
   logout: () => void;
   isAuthenticated: boolean;
+  isLoading: boolean; // Ajouté
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -60,25 +68,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const login = (token: string, userData: User) => {
+  const login = useCallback((token: string, userData: User) => {
     setUser(userData);
     setIsAuthenticated(true);
+
+    // Stocker dans localStorage pour usage côté client
     localStorage.setItem("user", JSON.stringify(userData));
     localStorage.setItem("token", token);
-    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-  };
 
-  const logout = () => {
+    // Stocker aussi dans un cookie pour le middleware
+    document.cookie = `auth-token=${token}; path=/; max-age=${
+      60 * 60 * 24 * 7
+    }; SameSite=Strict`;
+
+    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  }, []);
+
+  const logout = useCallback(() => {
     setUser(null);
     setIsAuthenticated(false);
+
+    // Supprimer du localStorage
     localStorage.removeItem("user");
     localStorage.removeItem("token");
+
+    // Supprimer le cookie
+    document.cookie =
+      "auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+
     delete axios.defaults.headers.common["Authorization"];
     router.push("/login");
-  };
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout }}>
+    <AuthContext.Provider
+      value={{ user, isAuthenticated, login, logout, isLoading }}
+    >
       {children}
     </AuthContext.Provider>
   );

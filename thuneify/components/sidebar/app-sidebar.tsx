@@ -119,10 +119,10 @@ export function AppSidebar() {
                         <span>{item.title}</span>
                       </button>
                     ) : (
-                      <a href={item.path}>
+                      <Link href={item.path} className="flex items-center w-full">
                         <item.icon />
                         <span>{item.title}</span>
-                      </a>
+                      </Link>
                     )}
                   </SidebarMenuButton>
                 </SidebarMenuItem>

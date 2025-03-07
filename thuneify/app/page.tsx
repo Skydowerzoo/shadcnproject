@@ -124,6 +124,7 @@ export default function Home() {
 
   return (
     <div className="container mx-auto p-4">
+      {/* En-tête */}
       <Card className="mb-8">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">
@@ -134,6 +135,28 @@ export default function Home() {
           <p className="mb-6 text-lg">
             Gérez vos tâches quotidiennes et vos dépenses efficacement.
           </p>
+
+          {/* Nouvel encart pour infos rapides */}
+          <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4 mb-4">
+            <div className="flex flex-col items-center p-4 bg-primary/10 rounded-md">
+              <span className="font-bold text-primary">Total du mois</span>
+              <span className="text-sm">{stats.total} €</span>
+            </div>
+            <div className="flex flex-col items-center p-4 bg-primary/10 rounded-md">
+              <span className="font-bold text-primary">Moyenne mensuelle</span>
+              <span className="text-sm">{stats.moyenne} €</span>
+            </div>
+            <div className="flex flex-col items-center p-4 bg-primary/10 rounded-md">
+              <span className="font-bold text-primary">Max dépense</span>
+              <span className="text-sm">{stats.max} €</span>
+            </div>
+            <div className="flex flex-col items-center p-4 bg-primary/10 rounded-md">
+              <span className="font-bold text-primary">État du compte</span>
+              <span className="text-sm">{user ? "Actif" : "Invité"}</span>
+            </div>
+          </div>
+
+          {/* Carousel existant */}
           <Carousel opts={{ align: "start" }} className="w-full">
             <CarouselContent>
               <CarouselItem className="md:basis-1/2 lg:basis-1/3">
@@ -198,6 +221,7 @@ export default function Home() {
         </CardContent>
       </Card>
 
+      {/* Aperçu dépenses + résumé existants */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-8">
         <Card className="col-span-2">
           <CardHeader>
@@ -317,6 +341,29 @@ export default function Home() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Section supplémentaire pour statistiques récentes */}
+      <Card className="mt-8">
+        <CardHeader>
+          <CardTitle>Vos activités récentes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            Consultez vos dernières dépenses ou tâches réalisées.
+          </p>
+          {/* Simulez un petit tableau ou liste de mises à jour */}
+          <ul className="mt-4 space-y-2">
+            <li className="bg-accent p-2 rounded-md flex justify-between">
+              <span>Nouveau manga acheté</span>
+              <span className="font-bold">12 €</span>
+            </li>
+            <li className="bg-accent p-2 rounded-md flex justify-between">
+              <span>Épicerie</span>
+              <span className="font-bold">35 €</span>
+            </li>
+          </ul>
+        </CardContent>
+      </Card>
     </div>
   );
 }
