@@ -1,20 +1,7 @@
 "use client";
 
-import {
-  BadgeDollarSign,
-  BookOpen,
-  Home,
-  LogIn,
-  LogOut,
-  Moon,
-  ShoppingBasket,
-  Sun,
-  User,
-} from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,10 +27,21 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useAuth } from "@/context/auth-context";
+import {
+  BadgeDollarSign,
+  BookOpen,
+  Home,
+  LogIn,
+  LogOut,
+  Moon,
+  ShoppingBasket,
+  Sun,
+  User,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 
-// Menu items.
+// Menu items de base sans les liens d'authentification
 const baseItems = [
   {
     title: "Home",
@@ -65,36 +63,14 @@ const baseItems = [
     path: "/manga",
     icon: BookOpen,
   },
-  {
-    title: "Account",
-    path: "/account",
-    icon: User,
-  },
 ];
 
 export function AppSidebar() {
   const { setTheme } = useTheme();
   const { user, logout, isAuthenticated } = useAuth();
 
-  const items = [
-    ...baseItems,
-    ...(isAuthenticated
-      ? [
-          {
-            title: "Logout",
-            path: "#",
-            icon: LogOut,
-            onClick: logout,
-          },
-        ]
-      : [
-          {
-            title: "Login",
-            path: "/login",
-            icon: LogIn,
-          },
-        ]),
-  ];
+  // On se contente ici des items de base sans Account/Login/Logout
+  const items = baseItems;
 
   return (
     <Sidebar>
@@ -110,20 +86,10 @@ export function AppSidebar() {
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    {item.onClick ? (
-                      <button
-                        onClick={item.onClick}
-                        className="flex items-center w-full"
-                      >
-                        <item.icon />
-                        <span>{item.title}</span>
-                      </button>
-                    ) : (
-                      <Link href={item.path} className="flex items-center w-full">
-                        <item.icon />
-                        <span>{item.title}</span>
-                      </Link>
-                    )}
+                    <Link href={item.path} className="flex items-center w-full">
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -133,7 +99,7 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter className="border-t py-4">
         <div className="flex flex-col items-center space-y-6 px-3">
-          {/* Utilisateur ou login */}
+          {/* Utilisateur (ou login si non authentifié) dans le footer */}
           {isAuthenticated && user ? (
             <div className="flex flex-col w-full items-center space-y-2">
               <DropdownMenu>

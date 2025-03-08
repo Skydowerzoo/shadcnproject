@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -27,13 +28,16 @@ import {
   ShoppingCart, 
   Filter, 
   PieChart, 
-  Plus, 
-  ChevronRight 
+  Plus,
+  Loader2, 
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
+import { useAuth } from "@/context/auth-context";
 
 interface GroceryItem {
+  id: number;
   name: string;
   category: string;
   checked: boolean;
@@ -53,15 +57,29 @@ const categories = [
   "Produits pour animaux",
 ];
 
+const API_URL = "http://localhost:5000/api";
+
 export function GroceryList() {
+  const { isAuthenticated, user } = useAuth();
   const [items, setItems] = useState<GroceryItem[]>([]);
   const [newItemName, setNewItemName] = useState("");
   const [newItemCategory, setNewItemCategory] = useState(categories[1]);
   const [filterCategory, setFilterCategory] = useState(categories[0]);
   const [categoryStats, setCategoryStats] = useState<Record<string, number>>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Charger les articles au montage du composant si l'utilisateur est connecté
   useEffect(() => {
-    // Calculer les statistiques par catégorie
+    if (isAuthenticated && user) {
+      fetchGroceryItems();
+    } else {
+      setIsLoading(false);
+    }
+  }, [isAuthenticated, user]);
+
+  // Calculer les statistiques par catégorie quand les items changent
+  useEffect(() => {
     const stats = items.reduce((acc, item) => {
       if (!acc[item.category]) {
         acc[item.category] = 0;
@@ -73,40 +91,177 @@ export function GroceryList() {
     setCategoryStats(stats);
   }, [items]);
 
+  // Récupérer les articles depuis l'API
+  const fetchGroceryItems = async () => {
+    if (!isAuthenticated) {
+      setIsLoading(false);
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      const response = await axios.get(`${API_URL}/grocery`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      // Convertir les dates et préparer les items
+      const formattedItems = response.data.map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        category: item.category,
+        checked: item.checked,
+        addedAt: new Date(item.added_at)
+      }));
+      
+      setItems(formattedItems);
+    } catch (error) {
+      console.error('Erreur lors du chargement des articles:', error);
+      toast.error('Impossible de charger votre liste de courses');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Ajout item
-  const handleAddItem = () => {
+  const handleAddItem = async () => {
+    if (!isAuthenticated) {
+      toast.error('Vous devez être connecté pour ajouter des articles');
+      return;
+    }
+    
     if (newItemName.trim() && newItemCategory) {
-      setItems((prev) => [
-        ...prev,
-        { 
-          name: newItemName, 
-          category: newItemCategory, 
-          checked: false,
-          addedAt: new Date()
-        },
-      ]);
-      setNewItemName("");
-      setNewItemCategory(categories[1]);
+      try {
+        setIsSubmitting(true);
+        const response = await axios.post(`${API_URL}/grocery`, {
+          name: newItemName,
+          category: newItemCategory
+        }, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        
+        const newItem = response.data;
+        
+        // Ajouter à la liste locale
+        setItems((prev) => [
+          {
+            id: newItem.id,
+            name: newItem.name,
+            category: newItem.category,
+            checked: newItem.checked,
+            addedAt: new Date(newItem.added_at)
+          },
+          ...prev
+        ]);
+        
+        // Réinitialiser le formulaire
+        setNewItemName("");
+        setNewItemCategory(categories[1]);
+        toast.success('Article ajouté avec succès');
+      } catch (error) {
+        console.error('Erreur lors de l\'ajout d\'un article:', error);
+        toast.error('Impossible d\'ajouter l\'article');
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
   // Coche/décoche item
-  const handleCheckItem = (index: number) => {
-    setItems((prev) =>
-      prev.map((item, i) =>
-        i === index ? { ...item, checked: !item.checked } : item
-      )
-    );
+  const handleCheckItem = async (id: number) => {
+    if (!isAuthenticated) {
+      toast.error('Vous devez être connecté pour modifier des articles');
+      return;
+    }
+
+    try {
+      // Optimistic update
+      setItems((prev) =>
+        prev.map((item) =>
+          item.id === id ? { ...item, checked: !item.checked } : item
+        )
+      );
+      
+      // API call
+      await axios.patch(`${API_URL}/grocery/${id}/toggle`, {}, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de l\'article:', error);
+      toast.error('Impossible de mettre à jour l\'article');
+      
+      // Revert on error
+      fetchGroceryItems();
+    }
   };
 
   // Supprime item
-  const handleDeleteItem = (index: number) => {
-    setItems((prev) => prev.filter((_, i) => i !== index));
+  const handleDeleteItem = async (id: number) => {
+    if (!isAuthenticated) {
+      toast.error('Vous devez être connecté pour supprimer des articles');
+      return;
+    }
+    
+    try {
+      // Optimistic update
+      setItems((prev) => prev.filter((item) => item.id !== id));
+      
+      // API call
+      await axios.delete(`${API_URL}/grocery/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      toast.success('Article supprimé avec succès');
+    } catch (error) {
+      console.error('Erreur lors de la suppression de l\'article:', error);
+      toast.error('Impossible de supprimer l\'article');
+      
+      // Revert on error
+      fetchGroceryItems();
+    }
   };
 
   // Supprimer tous les éléments cochés
-  const handleDeleteChecked = () => {
-    setItems((prev) => prev.filter(item => !item.checked));
+  const handleDeleteChecked = async () => {
+    if (!isAuthenticated) {
+      toast.error('Vous devez être connecté pour supprimer des articles');
+      return;
+    }
+    
+    try {
+      const checkedIds = items.filter(item => item.checked).map(item => item.id);
+      
+      if (checkedIds.length === 0) return;
+      
+      // Optimistic update
+      setItems((prev) => prev.filter((item) => !item.checked));
+      
+      // Delete each checked item
+      let deletedCount = 0;
+      for (const id of checkedIds) {
+        await axios.delete(`${API_URL}/grocery/${id}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        deletedCount++;
+      }
+      
+      toast.success(`${deletedCount} articles supprimés`);
+    } catch (error) {
+      console.error('Erreur lors de la suppression des articles cochés:', error);
+      toast.error('Impossible de supprimer les articles cochés');
+      
+      // Revert on error
+      fetchGroceryItems();
+    }
   };
 
   // Filtrage
@@ -121,6 +276,35 @@ export function GroceryList() {
   const progressValue =
     totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
   const remainingItems = totalItems - completedItems;
+
+  // Si l'utilisateur n'est pas authentifié
+  if (!isAuthenticated) {
+    return (
+      <div className="container mx-auto py-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Liste de courses</CardTitle>
+            <CardDescription>Connectez-vous pour accéder à votre liste de courses</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>Vous devez être connecté pour utiliser cette fonctionnalité.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Affichage pendant le chargement
+  if (isLoading) {
+    return (
+      <div className="container mx-auto py-8 flex justify-center items-center h-64">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Chargement de votre liste de courses...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-8">
@@ -147,11 +331,12 @@ export function GroceryList() {
                   onChange={(e) => setNewItemName(e.target.value)}
                   placeholder="Pizza, Lait, etc."
                   className="mt-1"
+                  disabled={isSubmitting}
                 />
               </div>
               <div>
                 <Label>Catégorie</Label>
-                <Select onValueChange={setNewItemCategory} value={newItemCategory}>
+                <Select onValueChange={setNewItemCategory} value={newItemCategory} disabled={isSubmitting}>
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Choisir une catégorie" />
                   </SelectTrigger>
@@ -166,8 +351,16 @@ export function GroceryList() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleAddItem} className="w-full">
-                <ShoppingCart className="mr-2 h-4 w-4" /> Ajouter à la liste
+              <Button onClick={handleAddItem} className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Ajout en cours...
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart className="mr-2 h-4 w-4" /> Ajouter à la liste
+                  </>
+                )}
               </Button>
             </CardFooter>
           </Card>
@@ -297,8 +490,8 @@ function ListContent({
   handleDeleteItem 
 }: { 
   items: GroceryItem[], 
-  handleCheckItem: (index: number) => void, 
-  handleDeleteItem: (index: number) => void 
+  handleCheckItem: (id: number) => void, 
+  handleDeleteItem: (id: number) => void 
 }) {
   if (items.length === 0) {
     return (
@@ -321,13 +514,13 @@ function ListContent({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {items.map((item, index) => (
-            <TableRow key={index} className={item.checked ? "bg-muted/30" : ""}>
+          {items.map((item) => (
+            <TableRow key={item.id} className={item.checked ? "bg-muted/30" : ""}>
               <TableCell className="text-center">
                 <div className="flex justify-center">
                   <Checkbox
                     checked={item.checked}
-                    onCheckedChange={() => handleCheckItem(index)}
+                    onCheckedChange={() => handleCheckItem(item.id)}
                   />
                 </div>
               </TableCell>
@@ -346,7 +539,7 @@ function ListContent({
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => handleDeleteItem(index)}
+                  onClick={() => handleDeleteItem(item.id)}
                 >
                   <Trash className="h-4 w-4 text-red-500" />
                 </Button>

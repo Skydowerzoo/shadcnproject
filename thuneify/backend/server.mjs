@@ -14,8 +14,7 @@ connectDB();
 app.use(cors());
 app.use(bodyParser.json());
 
-// CORRECTION: Supprimer la route conflictuelle
-// Routes API
+// Routes API - toutes regroupées dans le même fichier
 app.use('/api', authRoutes);
 
 // Ajout de logs pour le débogage

@@ -4,8 +4,9 @@ import jwt from 'jsonwebtoken';
 import { getUserByEmail, createUser, getUserById, updateUserById } from '../models/user.mjs';
 
 const registerUser = async (req, res) => {
-  const { firstname, lastname, date, email, phone, password, address, bio } = req.body;
-  if (!firstname || !lastname || !date || !email || !password) {
+  const { firstname, lastname, email, password } = req.body;
+  // Suppression de date des champs requis
+  if (!firstname || !lastname || !email || !password) {
     return res.status(400).json({ error: 'Tous les champs requis ne sont pas remplis.' });
   }
 
@@ -16,10 +17,24 @@ const registerUser = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log('Mot de passe haché:', hashedPassword); // Ajoutez ce log
-    const newUser = await createUser(firstname, lastname, date, email, phone, hashedPassword, address, bio);
+    
+    // Ajout d'une date par défaut
+    const date = req.body.date || new Date().toISOString().split('T')[0];
+    
+    const newUser = await createUser(
+      firstname, 
+      lastname, 
+      date,  // utilisez la date fournie ou la date actuelle
+      email, 
+      req.body.phone || null, 
+      hashedPassword, 
+      req.body.address || null, 
+      req.body.bio || null
+    );
+    
     res.status(201).json(newUser);
   } catch (err) {
+    console.error('Erreur lors de l\'inscription:', err);
     res.status(500).json({ error: err.message });
   }
 };
