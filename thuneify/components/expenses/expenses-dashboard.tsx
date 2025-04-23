@@ -17,12 +17,22 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { filterExpensesByTimeRange } from "@/lib/utils";
+import { addExpense, Expense, fetchExpenses } from "@/services/expenses";
 import { BarChart2, Eye, EyeOff, Plus, Table } from "lucide-react";
 import * as React from "react";
 import {
@@ -36,17 +46,6 @@ import {
 } from "recharts";
 import { DataTable } from "./data-table";
 import { ExpensesForm } from "./expenses-form";
-import axios from "axios";
-
-// Importer les composants Dialog
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 
 const chartConfig = {
   perso: {
@@ -59,71 +58,53 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-type Expense = {
-  date: string; // La date au format "YYYY-MM-DD"
-  perso: number; // Le montant pour le compte personnel
-  commun: number; // Le montant pour le compte commun
-};
-
 export function Dashboard() {
   const [timeRange, setTimeRange] = React.useState("360d");
   const [data, setData] = React.useState<Expense[]>([]);
   const [chartType, setChartType] = React.useState<"area" | "bar">("area");
   const [showChart, setShowChart] = React.useState(true);
   const [showTable, setShowTable] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    // Récupérer les dépenses depuis le backend
-    axios.get('http://localhost:5000/api/expenses')
-      .then(response => {
-        setData(response.data);
+    setLoading(true);
+    setError(null);
+    fetchExpenses()
+      .then(setData)
+      .catch((err) => {
+        setError("Erreur lors de la récupération des dépenses");
+        console.error(err);
       })
-      .catch(error => {
-        console.error('Erreur lors de la récupération des dépenses :', error);
-      });
+      .finally(() => setLoading(false));
   }, []);
 
-  const handleAddExpense = (newExpense: Expense) => {
-    axios.post('http://localhost:5000/api/expenses', newExpense)
-      .then(response => {
-        setData((prevData) => {
-          const updatedData = [...prevData, response.data];
-
-          // Trier les données par date
-          return updatedData.sort((a, b) => {
-            const dateA = new Date(a.date).getTime(); // Convertir en timestamp
-            const dateB = new Date(b.date).getTime(); // Convertir en timestamp
-            return dateA - dateB; // Comparer les timestamps
-          });
-        });
-      })
-      .catch(error => {
-        console.error('Erreur lors de l\'ajout de la dépense :', error);
+  const handleAddExpense = React.useCallback(async (newExpense: Expense) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const created = await addExpense(newExpense);
+      setData((prevData) => {
+        const updatedData = [...prevData, created];
+        return updatedData.sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
       });
-  };
-
-  const filteredData = data.filter((item) => {
-    const date = new Date(item.date);
-    const referenceDate = new Date(); // Utiliser la date d'aujourd'hui
-
-    let daysToSubtract = 360;
-    if (timeRange === "180d") {
-      daysToSubtract = 180;
-    } else if (timeRange === "90d") {
-      daysToSubtract = 90;
-    } else if (timeRange === "30d") {
-      daysToSubtract = 30;
-    } else if (timeRange === "7d") {
-      daysToSubtract = 7;
+    } catch (err) {
+      setError("Erreur lors de l'ajout de la dépense");
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-    const startDate = new Date(referenceDate);
-    startDate.setDate(startDate.getDate() - daysToSubtract);
-    return date >= startDate;
-  });
+  }, []);
+
+  const filteredData = React.useMemo(
+    () => filterExpensesByTimeRange(data, timeRange),
+    [data, timeRange]
+  );
 
   return (
     <div className="min-h-screen p-4 space-y-6">
-      {/* Carte pour la table et les graphiques */}
       <Card className="mx-auto max-w-6xl">
         <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-4">
           <div className="space-y-1">
@@ -135,7 +116,6 @@ export function Dashboard() {
             </CardDescription>
           </div>
           <div className="flex gap-2">
-            {/* Bouton Add New Expenses */}
             <Dialog>
               <DialogTrigger asChild>
                 <Button className="w-auto">
@@ -150,12 +130,10 @@ export function Dashboard() {
                     Fill in the details below to add a new expense.
                   </DialogDescription>
                 </DialogHeader>
-                {/* Intégrer le formulaire ici */}
                 <ExpensesForm onAddExpense={handleAddExpense} />
               </DialogContent>
             </Dialog>
 
-            {/* Bouton Show Table */}
             <Button variant="outline" onClick={() => setShowTable(!showTable)}>
               {showTable ? (
                 <BarChart2 className="h-4 w-4" />
@@ -340,7 +318,6 @@ export function Dashboard() {
             </CardContent>
           )
         )}
-        
       </Card>
     </div>
   );

@@ -40,6 +40,8 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 // Menu items de base sans les liens d'authentification
 const baseItems = [
@@ -68,31 +70,66 @@ const baseItems = [
 export function AppSidebar() {
   const { setTheme } = useTheme();
   const { user, logout, isAuthenticated } = useAuth();
+  const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(false);
 
   // On se contente ici des items de base sans Account/Login/Logout
   const items = baseItems;
 
   return (
-    <Sidebar>
-      <SidebarHeader className="border-b px-4 py-4 h-16">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+    <Sidebar className={collapsed ? "w-16" : "w-64"}>
+      <SidebarHeader className="border-b px-4 py-4 h-16 flex items-center justify-between mb-4">
+        <h1
+          className={`text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent transition-all duration-200 ${
+            collapsed ? "scale-0 w-0" : "scale-100 w-auto"
+          }`}
+        >
           THUNEIFY
         </h1>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={collapsed ? "Ouvrir la sidebar" : "Réduire la sidebar"}
+          onClick={() => setCollapsed((c) => !c)}
+          className="ml-2"
+        >
+          <span className="sr-only">Toggle sidebar</span>
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+            <path
+              d="M4 12h16M4 6h16M4 18h16"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          </svg>
+        </Button>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link href={item.path} className="flex items-center w-full">
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {items.map((item) => {
+                const isActive = pathname === item.path;
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <Link
+                        href={item.path}
+                        className={`flex items-center w-full gap-3 px-2 py-2 rounded-md transition-colors duration-150 ${
+                          isActive
+                            ? "bg-primary/10 text-primary font-semibold"
+                            : "hover:bg-muted"
+                        } ${collapsed ? "justify-center" : ""}`}
+                        aria-current={isActive ? "page" : undefined}
+                        tabIndex={0}
+                      >
+                        <item.icon className="h-5 w-5" />
+                        {!collapsed && <span>{item.title}</span>}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -106,7 +143,9 @@ export function AppSidebar() {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="w-full flex items-center justify-start gap-2 h-auto px-3 py-1.5"
+                    className={`w-full flex items-center justify-start gap-2 h-auto px-3 py-1.5 ${
+                      collapsed ? "justify-center px-0" : ""
+                    }`}
                   >
                     <Avatar className="h-8 w-8">
                       <AvatarImage
@@ -117,12 +156,14 @@ export function AppSidebar() {
                         {user.firstname.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex flex-col items-start">
-                      <span className="font-medium">{user.firstname}</span>
-                      <span className="text-xs text-muted-foreground truncate max-w-[120px]">
-                        {user.email}
-                      </span>
-                    </div>
+                    {!collapsed && (
+                      <div className="flex flex-col items-start">
+                        <span className="font-medium">{user.firstname}</span>
+                        <span className="text-xs text-muted-foreground truncate max-w-[120px]">
+                          {user.email}
+                        </span>
+                      </div>
+                    )}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
@@ -143,10 +184,14 @@ export function AppSidebar() {
               </DropdownMenu>
             </div>
           ) : (
-            <Button variant="outline" className="w-full" asChild>
+            <Button
+              variant="outline"
+              className={`w-full ${collapsed ? "justify-center px-0" : ""}`}
+              asChild
+            >
               <Link href="/login" className="flex items-center gap-2">
                 <LogIn className="h-4 w-4" />
-                <span>Connexion</span>
+                {!collapsed && <span>Connexion</span>}
               </Link>
             </Button>
           )}
@@ -207,7 +252,11 @@ export function AppSidebar() {
               </Tooltip>
             </TooltipProvider>
 
-            <span className="text-xs text-muted-foreground">
+            <span
+              className={`text-xs text-muted-foreground transition-all duration-200 ${
+                collapsed ? "scale-0 w-0" : "scale-100 w-auto"
+              }`}
+            >
               © 2025 Thuneify
             </span>
           </div>
