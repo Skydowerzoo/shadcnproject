@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -13,8 +12,19 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import {ChevronDown, MoreHorizontal } from "lucide-react";
+import { ChevronDown, MoreHorizontal } from "lucide-react";
+import * as React from "react";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -35,9 +45,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useToast } from "@/hooks/use-toast";
+import { deleteExpense } from "@/services/expenses";
 
 // Type des données partagées avec le tableau de bord
 export type Expense = {
+  id: string;
   date: string;
   perso: number;
   commun: number;
@@ -111,6 +124,13 @@ export const columns: ColumnDef<Expense>[] = [
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>Voir détails</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="text-red-600 focus:text-red-700"
+              onClick={() => setDeletingRow(expense.id)}
+            >
+              Supprimer
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -130,10 +150,73 @@ export function DataTable({ data }: DataTableDemoProps) {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+  const [tableData, setTableData] = React.useState<Expense[]>(data);
+  const [deletingRow, setDeletingRow] = React.useState<string | null>(null);
+  const { toast } = useToast();
+
+  const handleDelete = async (id: string) => {
+    console.log("Suppression demandée pour l'id :", id);
+    try {
+      const message = await deleteExpense(id);
+      setTableData((prev) => prev.filter((row) => row.id !== id));
+      console.log("Réponse serveur :", message);
+      toast &&
+        toast({
+          title: "Suppression réussie",
+          description: message,
+        });
+    } catch (error) {
+      console.error("Erreur lors de la suppression :", error);
+      toast &&
+        toast({
+          title: "Erreur",
+          description: "La suppression a échoué.",
+          variant: "destructive",
+        });
+    }
+    setDeletingRow(null);
+  };
 
   const table = useReactTable({
-    data,
-    columns,
+    data: tableData,
+    columns: columns.map((col) => {
+      if (col.id === "actions") {
+        return {
+          ...col,
+          cell: ({ row }: any) => {
+            const expense = row.original;
+            return (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-8 w-8 p-0">
+                    <span className="sr-only">Ouvrir menu</span>
+                    <MoreHorizontal />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center">
+                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                  <DropdownMenuItem
+                    onClick={() => navigator.clipboard.writeText(expense.date)}
+                  >
+                    Copier la date
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>Voir détails</DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="text-red-600 focus:text-red-700"
+                    onClick={() => setDeletingRow(expense.id)}
+                  >
+                    Supprimer
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            );
+          },
+        };
+      }
+      return col;
+    }),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -262,6 +345,32 @@ export function DataTable({ data }: DataTableDemoProps) {
           </Button>
         </div>
       </div>
+      {/* Confirmation dialog for delete */}
+      <AlertDialog
+        open={!!deletingRow}
+        onOpenChange={(open) => !open && setDeletingRow(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer cette dépense ? Cette action
+              est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeletingRow(null)}>
+              Annuler
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => handleDelete(deletingRow!)}
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -1,145 +1,68 @@
-import {
-  getAllProducts,
-  getProductById,
-  getProductsByCategory,
-  createProduct,
-  updateProduct,
-  deleteProduct,
-  searchProducts,
-  toggleProductChecked
-} from '../models/grocery.mjs';
+import { pool } from '../config/db.mjs';
+import { success, error } from '../utils/response.mjs';
 
-// Récupérer tous les produits
-export const getProducts = async (req, res) => {
+function validateGrocery({ name, category }) {
+  if (!name || !category) {
+    return 'Nom et catégorie sont requis.';
+  }
+  return null;
+}
+
+const getGroceries = async (req, res) => {
   try {
-    const products = await getAllProducts();
-    res.status(200).json(products);
-  } catch (error) {
-    console.error('Erreur lors de la récupération des produits:', error);
-    res.status(500).json({ error: 'Erreur serveur lors de la récupération des produits' });
+    const result = await pool.query('SELECT * FROM grocery');
+    return success(res, result.rows);
+  } catch (err) {
+    return error(res, err.message);
   }
 };
 
-// Récupérer un produit par son ID
-export const getProduct = async (req, res) => {
+const addGrocery = async (req, res) => {
+  const validationError = validateGrocery(req.body);
+  if (validationError) return error(res, validationError, 400);
+  const { name, category } = req.body;
   try {
-    const { id } = req.params;
-    const product = await getProductById(id);
-    
-    if (!product) {
-      return res.status(404).json({ error: 'Produit non trouvé' });
+    const result = await pool.query(
+      'INSERT INTO grocery (name, category) VALUES ($1, $2) RETURNING *',
+      [name, category]
+    );
+    return success(res, result.rows[0], 201);
+  } catch (err) {
+    return error(res, err.message);
+  }
+};
+
+const updateGrocery = async (req, res) => {
+  const { id } = req.params;
+  const validationError = validateGrocery(req.body);
+  if (validationError) return error(res, validationError, 400);
+  const { name, category } = req.body;
+  try {
+    const result = await pool.query(
+      'UPDATE grocery SET name = $1, category = $2 WHERE id = $3 RETURNING *',
+      [name, category, id]
+    );
+    if (result.rows.length === 0) {
+      return error(res, 'Article non trouvé.', 404);
     }
-    
-    res.status(200).json(product);
-  } catch (error) {
-    console.error('Erreur lors de la récupération du produit:', error);
-    res.status(500).json({ error: 'Erreur serveur lors de la récupération du produit' });
+    return success(res, result.rows[0]);
+  } catch (err) {
+    return error(res, err.message);
   }
 };
 
-// Récupérer des produits par catégorie
-export const getProductsInCategory = async (req, res) => {
+const deleteGrocery = async (req, res) => {
+  const { id } = req.params;
   try {
-    const { category } = req.params;
-    const products = await getProductsByCategory(category);
-    res.status(200).json(products);
-  } catch (error) {
-    console.error('Erreur lors de la récupération des produits par catégorie:', error);
-    res.status(500).json({ error: 'Erreur serveur lors de la récupération des produits par catégorie' });
-  }
-};
-
-// Créer un nouveau produit (simplifié pour liste de courses)
-export const addProduct = async (req, res) => {
-  try {
-    const { name, description, category, image_url } = req.body;
-    
-    // Validation des champs obligatoires
-    if (!name || !category) {
-      return res.status(400).json({ error: 'Le nom et la catégorie sont obligatoires' });
+    const result = await pool.query('DELETE FROM grocery WHERE id = $1 RETURNING *', [id]);
+    if (result.rows.length === 0) {
+      return error(res, 'Article non trouvé.', 404);
     }
-    
-    const newProduct = await createProduct(name, description, category, image_url);
-    res.status(201).json(newProduct);
-  } catch (error) {
-    console.error('Erreur lors de la création du produit:', error);
-    res.status(500).json({ error: 'Erreur serveur lors de la création du produit' });
+    return success(res, { message: 'Article supprimé avec succès.' });
+  } catch (err) {
+    return error(res, err.message);
   }
 };
 
-// Mettre à jour un produit
-export const updateProductById = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { name, description, category, image_url, is_checked } = req.body;
-    
-    const updatedProduct = await updateProduct(id, { 
-      name, 
-      description, 
-      category, 
-      image_url,
-      is_checked
-    });
-    
-    if (!updatedProduct) {
-      return res.status(404).json({ error: 'Produit non trouvé' });
-    }
-    
-    res.status(200).json(updatedProduct);
-  } catch (error) {
-    console.error('Erreur lors de la mise à jour du produit:', error);
-    res.status(500).json({ error: 'Erreur serveur lors de la mise à jour du produit' });
-  }
-};
-
-// Basculer l'état "coché" d'un produit
-export const toggleChecked = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updatedProduct = await toggleProductChecked(id);
-    
-    if (!updatedProduct) {
-      return res.status(404).json({ error: 'Produit non trouvé' });
-    }
-    
-    res.status(200).json(updatedProduct);
-  } catch (error) {
-    console.error('Erreur lors du basculement du statut du produit:', error);
-    res.status(500).json({ error: 'Erreur serveur lors du basculement du statut' });
-  }
-};
-
-// Supprimer un produit
-export const removeProduct = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const deletedProduct = await deleteProduct(id);
-    
-    if (!deletedProduct) {
-      return res.status(404).json({ error: 'Produit non trouvé' });
-    }
-    
-    res.status(200).json({ message: 'Produit supprimé avec succès', product: deletedProduct });
-  } catch (error) {
-    console.error('Erreur lors de la suppression du produit:', error);
-    res.status(500).json({ error: 'Erreur serveur lors de la suppression du produit' });
-  }
-};
-
-// Rechercher des produits
-export const searchForProducts = async (req, res) => {
-  try {
-    const { query } = req.query;
-    
-    if (!query) {
-      return res.status(400).json({ error: 'Requête de recherche manquante' });
-    }
-    
-    const results = await searchProducts(query);
-    res.status(200).json(results);
-  } catch (error) {
-    console.error('Erreur lors de la recherche de produits:', error);
-    res.status(500).json({ error: 'Erreur serveur lors de la recherche de produits' });
-  }
-};
+export { getGroceries, addGrocery, updateGrocery, deleteGrocery };
 

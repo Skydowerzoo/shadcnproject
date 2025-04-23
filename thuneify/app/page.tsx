@@ -9,6 +9,7 @@ import {
   ChartTooltip,
 } from "@/components/ui/chart";
 import { useAuth } from "@/context/auth-context";
+import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
 import {
   BarChart,
@@ -48,11 +49,14 @@ const chartConfig = {
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
   const [mounted, setMounted] = useState(false);
   const [expensesData, setExpensesData] = useState<
     { name: string; total: number; perso: number; commun: number }[]
   >([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -69,21 +73,56 @@ export default function Home() {
     }
   }, [isAuthenticated, router, mounted]);
 
+  // Message d'accueil dynamique
+  function getGreeting() {
+    const hour = new Date().getHours();
+    if (hour < 6) return "Bonne nuit";
+    if (hour < 12) return "Bonjour";
+    if (hour < 18) return "Bon après-midi";
+    return "Bonsoir";
+  }
+
+  // Mois/année dynamiques
+  const now = new Date();
+  const currentMonthYear = now.toLocaleString("fr-FR", {
+    month: "long",
+    year: "numeric",
+  });
+
+  // Rafraîchissement manuel et auto
+  const fetchExpenses = async (showToast = false) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get<Expense[]>(
+        "http://localhost:5000/api/expenses"
+      );
+      setExpensesData(transformExpensesData(response.data));
+      setLastRefresh(new Date());
+      if (showToast)
+        toast &&
+          toast({
+            title: "Données mises à jour",
+          });
+    } catch (err) {
+      setError("Erreur lors de la récupération des dépenses");
+      toast &&
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les dépenses",
+          variant: "destructive",
+        });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (mounted && isAuthenticated) {
-      const fetchExpenses = async () => {
-        try {
-          const response = await axios.get<Expense[]>(
-            "http://localhost:5000/api/expenses"
-          );
-          setExpensesData(transformExpensesData(response.data));
-        } catch (error) {
-          console.error("Erreur lors de la récupération des dépenses:", error);
-        } finally {
-          setIsLoading(false);
-        }
-      };
       fetchExpenses();
+      // Rafraîchissement auto toutes les 2 min
+      const interval = setInterval(() => fetchExpenses(), 120000);
+      return () => clearInterval(interval);
     }
   }, [mounted, isAuthenticated]);
 
@@ -99,30 +138,30 @@ export default function Home() {
     const monthlyData = data.reduce((acc, expense) => {
       const date = new Date(expense.date);
       const month = date.toLocaleString("fr-FR", { month: "long" });
-
-      if (!acc[month]) {
-        acc[month] = { name: month, total: 0, perso: 0, commun: 0 };
+      const year = date.getFullYear();
+      const key = `${month} ${year}`;
+      if (!acc[key]) {
+        acc[key] = { name: key, total: 0, perso: 0, commun: 0 };
       }
-      acc[month].perso += Number(expense.perso || 0);
-      acc[month].commun += Number(expense.commun || 0);
-      acc[month].total = acc[month].perso + acc[month].commun;
-
+      acc[key].perso += Number(expense.perso || 0);
+      acc[key].commun += Number(expense.commun || 0);
+      acc[key].total = acc[key].perso + acc[key].commun;
       return acc;
     }, {} as Record<string, { name: string; total: number; perso: number; commun: number }>);
-
     return Object.values(monthlyData);
   }
 
   function calculateStats() {
     if (expensesData.length === 0) return { total: 0, moyenne: 0, max: 0 };
-    const currentMonth = new Date().toLocaleString("fr-FR", { month: "short" });
+    const month = new Date().toLocaleString("fr-FR", { month: "long" });
+    const year = new Date().getFullYear();
+    const currentKey = `${month} ${year}`;
     const totalMois =
-      expensesData.find((d) => d.name === currentMonth)?.total || 0;
+      expensesData.find((d) => d.name === currentKey)?.total || 0;
     const moyenne =
       expensesData.reduce((acc, curr) => acc + curr.total, 0) /
       expensesData.length;
     const max = Math.max(...expensesData.map((d) => d.total));
-
     return {
       total: Math.round(totalMois),
       moyenne: Math.round(moyenne),
@@ -135,9 +174,9 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       <main className="container mx-auto p-4">
-        {/* Message de bienvenue */}
-        <h1 className="text-3xl font-bold mb-2 flex items-center gap-2">
-          Bienvenue,{" "}
+        {/* Message de bienvenue dynamique */}
+        <h1 className="text-3xl font-bold mb-2 flex items-center gap-2 transition-all duration-500">
+          {getGreeting()},
           <span className="text-primary">
             {user ? user.firstname : "Invité"}
           </span>{" "}
@@ -146,25 +185,51 @@ export default function Home() {
         <p className="mb-8 text-muted-foreground text-lg">
           Gérez vos tâches et vos finances en toute simplicité.
         </p>
-
-        {/* Stats clés */}
+        {/* Bouton de rafraîchissement et info */}
+        <div className="flex items-center gap-4 mb-4">
+          <Button
+            onClick={() => fetchExpenses(true)}
+            disabled={isLoading}
+            variant="outline"
+          >
+            {isLoading ? (
+              <span className="flex items-center">
+                <span className="animate-spin mr-2 h-4 w-4 border-t-2 border-b-2 border-primary rounded-full"></span>
+                Rafraîchissement...
+              </span>
+            ) : (
+              <>🔄 Rafraîchir</>
+            )}
+          </Button>
+          {lastRefresh && (
+            <span className="text-xs text-muted-foreground">
+              Dernier rafraîchissement :{" "}
+              {lastRefresh.toLocaleTimeString("fr-FR")}
+            </span>
+          )}
+          {error && <span className="text-xs text-red-500">{error}</span>}
+        </div>
+        {/* Stats clés avec transition */}
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-          <Card className="flex flex-col items-center p-4 bg-gradient-to-br from-primary/10 to-primary/5 border-0 shadow-md">
+          <Card className="flex flex-col items-center p-4 bg-gradient-to-br from-primary/10 to-primary/5 border-0 shadow-md transition-transform duration-300 hover:scale-105">
             <DollarSign className="h-7 w-7 text-primary mb-1" />
             <span className="font-bold text-primary">Total du mois</span>
             <span className="text-xl font-semibold">{stats.total} €</span>
+            <span className="text-xs text-muted-foreground mt-1">
+              {currentMonthYear}
+            </span>
           </Card>
-          <Card className="flex flex-col items-center p-4 bg-gradient-to-br from-blue-200/40 to-blue-100/10 border-0 shadow-md">
+          <Card className="flex flex-col items-center p-4 bg-gradient-to-br from-blue-200/40 to-blue-100/10 border-0 shadow-md transition-transform duration-300 hover:scale-105">
             <BarChart className="h-7 w-7 text-blue-600 mb-1" />
             <span className="font-bold text-blue-700">Moyenne mensuelle</span>
             <span className="text-xl font-semibold">{stats.moyenne} €</span>
           </Card>
-          <Card className="flex flex-col items-center p-4 bg-gradient-to-br from-orange-200/40 to-orange-100/10 border-0 shadow-md">
+          <Card className="flex flex-col items-center p-4 bg-gradient-to-br from-orange-200/40 to-orange-100/10 border-0 shadow-md transition-transform duration-300 hover:scale-105">
             <ShoppingCart className="h-7 w-7 text-orange-500 mb-1" />
             <span className="font-bold text-orange-600">Max dépense</span>
             <span className="text-xl font-semibold">{stats.max} €</span>
           </Card>
-          <Card className="flex flex-col items-center p-4 bg-gradient-to-br from-green-200/40 to-green-100/10 border-0 shadow-md">
+          <Card className="flex flex-col items-center p-4 bg-gradient-to-br from-green-200/40 to-green-100/10 border-0 shadow-md transition-transform duration-300 hover:scale-105">
             <User className="h-7 w-7 text-green-600 mb-1" />
             <span className="font-bold text-green-700">État du compte</span>
             <span className="text-xl font-semibold">

@@ -14,7 +14,13 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -35,7 +41,7 @@ import {
   Phone,
   SaveIcon,
   User as UserIcon,
-  XIcon
+  XIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -87,15 +93,15 @@ export default function AccountForm() {
   // Fonction pour formater la date pour l'affichage
   const formatDateForDisplay = (dateString: string | undefined): string => {
     if (!dateString) return "Non renseigné";
-    
+
     try {
       const date = new Date(dateString);
       if (isNaN(date.getTime())) return "Format invalide";
-      
-      return date.toLocaleDateString('fr-FR', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
+
+      return date.toLocaleDateString("fr-FR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
       });
     } catch (error) {
       return "Format invalide";
@@ -117,7 +123,7 @@ export default function AccountForm() {
         date: formatDateForInput(user.date),
         email: user.email || "",
         phone: user.phone || "",
-        password: "", 
+        password: "",
         address: user.address || "",
         bio: user.bio || "",
       });
@@ -149,10 +155,10 @@ export default function AccountForm() {
       // Mise à jour du contexte utilisateur
       if (response.data && typeof updateUser === "function") {
         updateUser(response.data);
-        
+
         // Notification avec sonner
         toast.success("Profil mis à jour", {
-          description: "Vos informations ont été enregistrées avec succès."
+          description: "Vos informations ont été enregistrées avec succès.",
         });
       }
 
@@ -160,7 +166,8 @@ export default function AccountForm() {
     } catch (error) {
       console.error("Erreur lors de la mise à jour du profil:", error);
       toast.error("Erreur", {
-        description: "Impossible de mettre à jour votre profil. Veuillez réessayer."
+        description:
+          "Impossible de mettre à jour votre profil. Veuillez réessayer.",
       });
     } finally {
       setIsLoading(false);
@@ -208,60 +215,162 @@ export default function AccountForm() {
             <CardContent className="flex flex-col items-center space-y-4 pt-4">
               <div className="relative">
                 <Avatar className="h-24 w-24">
-                  <AvatarImage src={user?.avatar || ''} alt={user?.firstname} />
+                  <AvatarImage src={user?.avatar || ""} alt={user?.firstname} />
                   <AvatarFallback className="text-2xl">
-                    {user?.firstname?.charAt(0)}{user?.lastname?.charAt(0)}
+                    {user?.firstname?.charAt(0)}
+                    {user?.lastname?.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
-                <Badge variant="outline" className="absolute -bottom-1 -right-1 p-1 rounded-full bg-background">
+                <Badge
+                  variant="outline"
+                  className="absolute -bottom-1 -right-1 p-1 rounded-full bg-background"
+                >
                   <Camera className="h-4 w-4" />
                 </Badge>
               </div>
-              
-              <div className="text-center">
-                <h2 className="text-xl font-bold mt-2">
-                  {user?.firstname} {user?.lastname}
-                </h2>
-                <p className="text-muted-foreground text-sm">{user?.email}</p>
+              <div className="text-center w-full">
+                {isEditing ? (
+                  <div className="grid grid-cols-1 gap-2">
+                    <Input
+                      value={userData.firstname}
+                      onChange={(e) =>
+                        setUserData({ ...userData, firstname: e.target.value })
+                      }
+                      placeholder="Prénom"
+                      className="text-center"
+                    />
+                    <Input
+                      value={userData.lastname}
+                      onChange={(e) =>
+                        setUserData({ ...userData, lastname: e.target.value })
+                      }
+                      placeholder="Nom"
+                      className="text-center"
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <h2 className="text-xl font-bold mt-2">
+                      {user?.firstname} {user?.lastname}
+                    </h2>
+                  </>
+                )}
+                <p className="text-muted-foreground text-sm mt-1">
+                  {isEditing ? (
+                    <Input
+                      value={userData.email}
+                      onChange={(e) =>
+                        setUserData({ ...userData, email: e.target.value })
+                      }
+                      placeholder="Email"
+                      className="text-center"
+                    />
+                  ) : (
+                    user?.email
+                  )}
+                </p>
               </div>
-              
               <Separator />
-              
               <div className="w-full">
                 <div className="flex items-center mb-2">
                   <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
                   <span className="text-sm">Date de naissance</span>
                 </div>
-                <p className="text-sm font-medium pl-6">{formatDateForDisplay(user?.date)}</p>
+                {isEditing ? (
+                  <Input
+                    type="date"
+                    value={userData.date}
+                    onChange={(e) =>
+                      setUserData({ ...userData, date: e.target.value })
+                    }
+                    className="pl-6"
+                  />
+                ) : (
+                  <p className="text-sm font-medium pl-6">
+                    {formatDateForDisplay(user?.date)}
+                  </p>
+                )}
               </div>
-              
               <div className="w-full">
                 <div className="flex items-center mb-2">
                   <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
                   <span className="text-sm">Téléphone</span>
                 </div>
-                <p className="text-sm font-medium pl-6">{user?.phone || "Non renseigné"}</p>
+                {isEditing ? (
+                  <Input
+                    value={userData.phone}
+                    onChange={(e) =>
+                      setUserData({ ...userData, phone: e.target.value })
+                    }
+                    className="pl-6"
+                    placeholder="Téléphone"
+                  />
+                ) : (
+                  <p className="text-sm font-medium pl-6">
+                    {user?.phone || "Non renseigné"}
+                  </p>
+                )}
               </div>
-              
               <div className="w-full">
                 <div className="flex items-center mb-2">
                   <Home className="h-4 w-4 mr-2 text-muted-foreground" />
                   <span className="text-sm">Adresse</span>
                 </div>
-                <p className="text-sm font-medium pl-6">{user?.address || "Non renseignée"}</p>
+                {isEditing ? (
+                  <Input
+                    value={userData.address}
+                    onChange={(e) =>
+                      setUserData({ ...userData, address: e.target.value })
+                    }
+                    className="pl-6"
+                    placeholder="Adresse"
+                  />
+                ) : (
+                  <p className="text-sm font-medium pl-6">
+                    {user?.address || "Non renseignée"}
+                  </p>
+                )}
               </div>
-              
               <Separator />
-              
-              <div className="w-full">
-                <Button variant="outline" className="w-full">
-                  Télécharger vos données
-                </Button>
+              <div className="w-full flex gap-2 mt-2">
+                {isEditing ? (
+                  <>
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={handleCancel}
+                      disabled={isLoading}
+                    >
+                      Annuler
+                    </Button>
+                    <Button
+                      className="flex-1"
+                      onClick={handleSave}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <SaveIcon className="h-4 w-4 mr-2" />
+                      )}
+                      Sauvegarder
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    <PencilIcon className="h-4 w-4 mr-2" />
+                    Modifier
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
         </div>
-        
+
         {/* Formulaire principal */}
         <div className="lg:col-span-2">
           <Card>
@@ -310,31 +419,44 @@ export default function AccountForm() {
               )}
             </CardHeader>
             <CardContent className="pt-4">
-              <Tabs defaultValue="profile" value={activeTab} onValueChange={setActiveTab}>
+              <Tabs
+                defaultValue="profile"
+                value={activeTab}
+                onValueChange={setActiveTab}
+              >
                 <TabsList className="mb-4">
                   <TabsTrigger value="profile">Profil</TabsTrigger>
                   <TabsTrigger value="security">Sécurité</TabsTrigger>
                   <TabsTrigger value="details">Bio & Infos</TabsTrigger>
                 </TabsList>
-                
+
                 {/* Onglet Profil */}
                 <TabsContent value="profile" className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="firstname" className="flex items-center gap-2">
+                      <Label
+                        htmlFor="firstname"
+                        className="flex items-center gap-2"
+                      >
                         <UserIcon className="h-4 w-4" /> Prénom
                       </Label>
                       <Input
                         id="firstname"
                         value={userData.firstname}
                         onChange={(e) =>
-                          setUserData({ ...userData, firstname: e.target.value })
+                          setUserData({
+                            ...userData,
+                            firstname: e.target.value,
+                          })
                         }
                         disabled={!isEditing}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="lastname" className="flex items-center gap-2">
+                      <Label
+                        htmlFor="lastname"
+                        className="flex items-center gap-2"
+                      >
                         <UserIcon className="h-4 w-4" /> Nom
                       </Label>
                       <Input
@@ -392,19 +514,24 @@ export default function AccountForm() {
                     />
                   </div>
                 </TabsContent>
-                
+
                 {/* Onglet Sécurité */}
                 <TabsContent value="security" className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="password" className="flex items-center gap-2">
-                      <Lock className="h-4 w-4" /> 
+                    <Label
+                      htmlFor="password"
+                      className="flex items-center gap-2"
+                    >
+                      <Lock className="h-4 w-4" />
                       {isEditing ? "Nouveau mot de passe" : "Mot de passe"}
                     </Label>
                     <Input
                       id="password"
                       type="password"
                       placeholder={
-                        isEditing ? "Laisser vide pour conserver l'actuel" : "••••••••"
+                        isEditing
+                          ? "Laisser vide pour conserver l'actuel"
+                          : "••••••••"
                       }
                       value={userData.password}
                       onChange={(e) =>
@@ -418,30 +545,45 @@ export default function AccountForm() {
                       </p>
                     )}
                   </div>
-                  
+
                   <div className="mt-6 space-y-6">
                     <div className="flex items-center justify-between py-3 border-b">
                       <div>
-                        <h3 className="text-sm font-medium">Authentification à deux facteurs</h3>
-                        <p className="text-xs text-muted-foreground">Ajouter une couche de sécurité supplémentaire</p>
+                        <h3 className="text-sm font-medium">
+                          Authentification à deux facteurs
+                        </h3>
+                        <p className="text-xs text-muted-foreground">
+                          Ajouter une couche de sécurité supplémentaire
+                        </p>
                       </div>
-                      <Button variant="outline" disabled={true} size="sm">Configurer</Button>
+                      <Button variant="outline" disabled={true} size="sm">
+                        Configurer
+                      </Button>
                     </div>
-                    
+
                     <div className="flex items-center justify-between py-3 border-b">
                       <div>
-                        <h3 className="text-sm font-medium">Sessions actives</h3>
-                        <p className="text-xs text-muted-foreground">Gérez vos connexions sur différents appareils</p>
+                        <h3 className="text-sm font-medium">
+                          Sessions actives
+                        </h3>
+                        <p className="text-xs text-muted-foreground">
+                          Gérez vos connexions sur différents appareils
+                        </p>
                       </div>
-                      <Button variant="outline" size="sm">Gérer</Button>
+                      <Button variant="outline" size="sm">
+                        Gérer
+                      </Button>
                     </div>
                   </div>
                 </TabsContent>
-                
+
                 {/* Onglet Bio & Infos */}
                 <TabsContent value="details" className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="address" className="flex items-center gap-2">
+                    <Label
+                      htmlFor="address"
+                      className="flex items-center gap-2"
+                    >
                       <Home className="h-4 w-4" /> Adresse
                     </Label>
                     <Textarea
@@ -467,20 +609,35 @@ export default function AccountForm() {
                       }
                       disabled={!isEditing}
                       rows={4}
-                      placeholder={isEditing ? "Parlez-nous un peu de vous..." : ""}
+                      placeholder={
+                        isEditing ? "Parlez-nous un peu de vous..." : ""
+                      }
                     />
                   </div>
                 </TabsContent>
               </Tabs>
             </CardContent>
-            
+
             <CardFooter className="flex justify-between border-t pt-4 pb-4">
               <p className="text-xs text-muted-foreground">
                 Dernière mise à jour: {new Date().toLocaleDateString()}
               </p>
               {isEditing && (
-                <Button variant="ghost" size="sm" onClick={() => setActiveTab(activeTab === "profile" ? "security" : activeTab === "security" ? "details" : "profile")}>
-                  {activeTab === "details" ? "Terminer" : "Suivant"} <Check className="ml-1 h-3 w-3" />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    setActiveTab(
+                      activeTab === "profile"
+                        ? "security"
+                        : activeTab === "security"
+                        ? "details"
+                        : "profile"
+                    )
+                  }
+                >
+                  {activeTab === "details" ? "Terminer" : "Suivant"}{" "}
+                  <Check className="ml-1 h-3 w-3" />
                 </Button>
               )}
             </CardFooter>
