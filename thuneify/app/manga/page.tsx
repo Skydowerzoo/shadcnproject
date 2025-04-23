@@ -6,6 +6,8 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   BookOpen,
+  ChevronLeft,
+  ChevronRight,
   Clock,
   List,
   Loader2,
@@ -16,7 +18,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, FormEvent } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 
 // Types pour les données Jikan
 interface AnimeItem {
@@ -43,7 +45,7 @@ const MangaHomePage = () => {
   const [searchResults, setSearchResults] = useState<AnimeItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
-  
+
   const [trendingAnimes, setTrendingAnimes] = useState<AnimeItem[]>([]);
   const [genres, setGenres] = useState<GenreItem[]>([]);
   const [stats, setStats] = useState({
@@ -54,17 +56,26 @@ const MangaHomePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Nouveaux états pour le carrousel
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const autoplayRef = useRef<NodeJS.Timeout | null>(null);
+
   // Fonction de recherche
   const handleSearch = async (e?: FormEvent) => {
     if (e) e.preventDefault();
-    
+
     if (!searchTerm.trim()) return;
-    
+
     setIsSearching(true);
     setShowSearchResults(true);
-    
+
     try {
-      const response = await fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(searchTerm)}&limit=5`);
+      const response = await fetch(
+        `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(
+          searchTerm
+        )}&limit=5`
+      );
       const data = await response.json();
       setSearchResults(data.data || []);
     } catch (err) {
@@ -79,7 +90,7 @@ const MangaHomePage = () => {
     // Dans une application réelle, vous navigueriez vers une page de détails
     // router.push(`/manga/anime/${animeId}`);
     // Pour l'instant, ouvrons simplement la page MAL dans un nouvel onglet
-    window.open(`https://myanimelist.net/anime/${animeId}`, '_blank');
+    window.open(`https://myanimelist.net/anime/${animeId}`, "_blank");
   };
 
   // Fonction pour filtrer par genre
@@ -150,6 +161,26 @@ const MangaHomePage = () => {
     fetchData();
   }, []);
 
+  // Configure le défilement automatique
+  useEffect(() => {
+    if (trendingAnimes.length <= 3) return; // Ne pas démarrer l'autoplay s'il n'y a pas assez d'animes
+
+    const startAutoplay = () => {
+      autoplayRef.current = setInterval(() => {
+        nextSlide();
+      }, 5000); // Change de slide toutes les 5 secondes
+    };
+
+    startAutoplay();
+
+    // Nettoyage du timer quand le composant est démonté
+    return () => {
+      if (autoplayRef.current) {
+        clearInterval(autoplayRef.current);
+      }
+    };
+  }, [trendingAnimes.length]);
+
   // Afficher un état de chargement pendant la récupération des données
   if (loading) {
     return (
@@ -173,167 +204,120 @@ const MangaHomePage = () => {
     );
   }
 
+  // Fonctions pour le carrousel
+  const nextSlide = () => {
+    if (!trendingAnimes.length) return;
+
+    setCurrentSlide((prevSlide) => {
+      const nextSlide = (prevSlide + 1) % trendingAnimes.length;
+      return nextSlide;
+    });
+  };
+
+  const prevSlide = () => {
+    if (!trendingAnimes.length) return;
+
+    setCurrentSlide((prevSlide) => {
+      const nextSlide =
+        (prevSlide - 1 + trendingAnimes.length) % trendingAnimes.length;
+      return nextSlide;
+    });
+  };
+
   return (
     <div className="container mx-auto py-8 px-4 space-y-10">
       {/* En-tête avec recherche */}
       <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
         <h1 className="text-4xl font-bold">Univers Manga</h1>
-        <div className="relative w-full md:w-1/3">
-          <form onSubmit={handleSearch} className="flex">
-            <div className="relative flex-1">
-              <Search
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={18}
-              />
-              <Input 
-                placeholder="Rechercher un anime..." 
-                className="pl-10 pr-4" 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              {searchTerm && (
-                <button 
-                  type="button" 
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2" 
-                  onClick={() => setSearchTerm("")}
-                >
-                  <X size={16} className="text-gray-400" />
-                </button>
-              )}
-            </div>
-            <Button type="submit" className="ml-2" disabled={isSearching}>
-              {isSearching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Rechercher"}
+      </div>
+
+      {/* Trending animes - transformé en carrousel */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold flex items-center gap-2">
+            <TrendingUp size={20} />
+            Tendances
+          </h2>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-full"
+              onClick={prevSlide}
+              aria-label="Slide précédent"
+            >
+              <ChevronLeft size={16} />
             </Button>
-          </form>
-          
-          {/* Résultats de recherche */}
-          {showSearchResults && searchResults.length > 0 && (
-            <div className="absolute z-50 mt-1 w-full bg-white rounded-md shadow-lg border overflow-y-auto max-h-80">
-              <div className="p-2 flex justify-between items-center border-b">
-                <span className="text-sm font-medium">Résultats</span>
-                <button onClick={() => setShowSearchResults(false)} className="text-gray-500 hover:text-gray-700">
-                  <X size={16} />
-                </button>
-              </div>
-              <ul>
-                {searchResults.map(anime => (
-                  <li key={anime.mal_id} className="border-b last:border-0">
-                    <button 
-                      className="p-2 hover:bg-gray-100 w-full text-left flex items-start gap-2"
-                      onClick={() => viewAnimeDetails(anime.mal_id)}
-                    >
-                      <div className="h-16 w-12 bg-gray-200 flex-shrink-0 rounded overflow-hidden">
-                        <img 
-                          src={anime.images.jpg.image_url} 
-                          alt={anime.title}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1 overflow-hidden">
-                        <p className="font-medium text-sm truncate">{anime.title}</p>
-                        <p className="text-xs text-gray-500 line-clamp-2">
-                          {anime.synopsis || "Aucune description disponible"}
-                        </p>
-                      </div>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          
-          {showSearchResults && searchResults.length === 0 && !isSearching && (
-            <div className="absolute z-50 mt-1 w-full bg-white rounded-md shadow-lg border p-4 text-center">
-              <p>Aucun résultat trouvé pour "{searchTerm}"</p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Stats rapides */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-primary/10 p-4 rounded-lg text-center">
-          <p className="text-2xl font-bold">
-            {stats.animeCount.toLocaleString()}+
-          </p>
-          <p className="text-sm text-muted-foreground">Animes disponibles</p>
-        </div>
-        <div className="bg-primary/10 p-4 rounded-lg text-center">
-          <p className="text-2xl font-bold">
-            {stats.mangaCount.toLocaleString()}+
-          </p>
-          <p className="text-sm text-muted-foreground">Mangas référencés</p>
-        </div>
-        <div className="bg-primary/10 p-4 rounded-lg text-center">
-          <p className="text-2xl font-bold">{stats.upcomingCount}</p>
-          <p className="text-sm text-muted-foreground">Animes à venir</p>
-        </div>
-        <div className="bg-primary/10 p-4 rounded-lg text-center">
-          <p className="text-2xl font-bold">{genres.length}</p>
-          <p className="text-sm text-muted-foreground">Genres disponibles</p>
-        </div>
-      </div>
-
-      {/* Catégories populaires */}
-      <div>
-        <h2 className="text-2xl font-bold mb-4">Catégories populaires</h2>
-        <div className="flex flex-wrap gap-2">
-          {genres.map((genre) => (
-            <Badge
-              key={genre.mal_id}
-              variant="secondary"
-              className="text-sm py-2 px-4 cursor-pointer hover:bg-secondary"
-              onClick={() => filterByGenre(genre.mal_id, genre.name)}
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-full"
+              onClick={nextSlide}
+              aria-label="Slide suivant"
             >
-              {genre.name} ({genre.count})
-            </Badge>
-          ))}
+              <ChevronRight size={16} />
+            </Button>
+          </div>
         </div>
-      </div>
 
-      {/* Trending animes */}
-      <div>
-        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <TrendingUp size={20} />
-          Tendances
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {trendingAnimes.map((anime) => (
-            <Card
-              key={anime.mal_id}
-              className="overflow-hidden transition-all duration-300 hover:shadow-lg"
-            >
-              <div className="aspect-[2/3] relative">
-                <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs flex items-center">
-                  <Star
-                    size={12}
-                    className="mr-1 text-yellow-400"
-                    fill="currentColor"
-                  />{" "}
-                  {anime.score}
-                </div>
-                <img
-                  src={anime.images.jpg.image_url}
-                  alt={anime.title}
-                  className="w-full h-full object-cover absolute inset-0"
-                />
-              </div>
-              <CardContent className="p-4">
-                <h3 className="font-semibold">{anime.title}</h3>
-              </CardContent>
-              <CardFooter className="p-4 pt-0 flex justify-between">
-                <span className="text-xs text-muted-foreground">
-                  ID: {anime.mal_id}
-                </span>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
+        {/* Carrousel container - version très compacte */}
+        <div className="relative overflow-hidden">
+          <div
+            ref={carouselRef}
+            className="flex transition-transform duration-500 ease-in-out"
+            style={{
+              transform: `translateX(-${currentSlide * 16.666}%)`,
+              width: `${
+                trendingAnimes.length > 6 ? trendingAnimes.length * 16.666 : 100
+              }%`,
+            }}
+          >
+            {trendingAnimes.map((anime) => (
+              <div
+                key={anime.mal_id}
+                className="px-1 w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/6 flex-shrink-0"
+              >
+                <div
+                  className="cursor-pointer h-full overflow-hidden rounded-md shadow-sm hover:shadow-md transition-all"
                   onClick={() => viewAnimeDetails(anime.mal_id)}
                 >
-                  Voir plus
-                </Button>
-              </CardFooter>
-            </Card>
+                  <div className="aspect-[2/3] relative">
+                    <div className="absolute top-1 right-1 bg-black/70 text-white px-1 py-0.5 rounded text-[8px] flex items-center">
+                      <Star
+                        size={8}
+                        className="mr-0.5 text-yellow-400"
+                        fill="currentColor"
+                      />
+                      {anime.score}
+                    </div>
+                    <img
+                      src={anime.images.jpg.image_url}
+                      alt={anime.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="p-1 bg-white">
+                    <p className="text-xs font-medium truncate">
+                      {anime.title}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Indicateurs de slide (optionnel) */}
+        <div className="flex justify-center mt-4 gap-1">
+          {trendingAnimes.map((_, index) => (
+            <button
+              key={index}
+              className={`w-2 h-2 rounded-full transition-all ${
+                currentSlide === index ? "bg-primary w-4" : "bg-gray-300"
+              }`}
+              onClick={() => setCurrentSlide(index)}
+              aria-label={`Aller au slide ${index + 1}`}
+            />
           ))}
         </div>
       </div>
@@ -378,44 +362,6 @@ const MangaHomePage = () => {
             </div>
           </Card>
         </Link>
-      </div>
-
-      {/* Actualités dynamiques basées sur les animes à venir */}
-      <div>
-        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <Clock size={20} />
-          Dernières actualités
-        </h2>
-        <Card className="p-4">
-          <div className="space-y-4">
-            {trendingAnimes.slice(0, 2).map((anime) => (
-              <div
-                key={anime.mal_id}
-                className="flex items-start gap-3 pb-3 border-b cursor-pointer hover:bg-gray-50 p-2 rounded"
-                onClick={() => viewAnimeDetails(anime.mal_id)}
-              >
-                <div className="bg-gray-100 h-14 w-14 flex-shrink-0 rounded relative overflow-hidden">
-                  <img
-                    src={anime.images.jpg.image_url}
-                    alt={anime.title}
-                    className="w-full h-full object-cover absolute inset-0"
-                  />
-                </div>
-                <div>
-                  <h3 className="font-medium">
-                    {anime.title} - Nouvelle saison annoncée
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    Mis à jour récemment • Score: {anime.score}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 text-center">
-            <Button variant="outline" onClick={viewAllNews}>Voir toutes les actualités</Button>
-          </div>
-        </Card>
       </div>
     </div>
   );

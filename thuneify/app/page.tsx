@@ -342,26 +342,71 @@ export default function Home() {
         </Card>
       </div>
 
-      {/* Section supplémentaire pour statistiques récentes */}
+      {/* Section d'objectifs financiers */}
       <Card className="mt-8">
         <CardHeader>
-          <CardTitle>Vos activités récentes</CardTitle>
+          <CardTitle>Vos objectifs financiers</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            Consultez vos dernières dépenses ou tâches réalisées.
+            Suivez votre progression vers vos objectifs d'épargne.
           </p>
-          {/* Simulez un petit tableau ou liste de mises à jour */}
-          <ul className="mt-4 space-y-2">
-            <li className="bg-accent p-2 rounded-md flex justify-between">
-              <span>Nouveau manga acheté</span>
-              <span className="font-bold">12 €</span>
-            </li>
-            <li className="bg-accent p-2 rounded-md flex justify-between">
-              <span>Épicerie</span>
-              <span className="font-bold">35 €</span>
-            </li>
-          </ul>
+
+          <div className="mt-4 space-y-6">
+            <div>
+              <div className="flex justify-between mb-2">
+                <span className="font-medium">Vacances d'été</span>
+                <span>1200€ / 2000€</span>
+              </div>
+              <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="bg-green-500 h-full rounded-full"
+                  style={{ width: "60%" }}
+                ></div>
+              </div>
+              <p className="text-xs text-right mt-1 text-muted-foreground">
+                60% atteint
+              </p>
+            </div>
+
+            <div>
+              <div className="flex justify-between mb-2">
+                <span className="font-medium">Nouvel ordinateur</span>
+                <span>750€ / 1500€</span>
+              </div>
+              <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="bg-blue-500 h-full rounded-full"
+                  style={{ width: "50%" }}
+                ></div>
+              </div>
+              <p className="text-xs text-right mt-1 text-muted-foreground">
+                50% atteint
+              </p>
+            </div>
+
+            <div>
+              <div className="flex justify-between mb-2">
+                <span className="font-medium">Fond d'urgence</span>
+                <span>3500€ / 5000€</span>
+              </div>
+              <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="bg-primary h-full rounded-full"
+                  style={{ width: "70%" }}
+                ></div>
+              </div>
+              <p className="text-xs text-right mt-1 text-muted-foreground">
+                70% atteint
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 flex justify-end">
+            <Button variant="outline" size="sm">
+              <span className="mr-2">+</span> Ajouter un objectif
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
