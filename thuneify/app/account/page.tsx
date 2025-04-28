@@ -2,10 +2,13 @@
 
 import AccountForm from "@/components/account-form";
 import { useAuth } from "@/context/auth-context";
+import { useAuthRedirect } from "@/hooks/use-auth-redirect";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function AccountPage() {
+  useAuthRedirect();
+
   const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 

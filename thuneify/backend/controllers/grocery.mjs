@@ -1,5 +1,11 @@
 import { pool } from '../config/db.mjs';
 import { success, error } from '../utils/response.mjs';
+import { z } from 'zod';
+
+const grocerySchema = z.object({
+  name: z.string(),
+  category: z.string(),
+});
 
 function validateGrocery({ name, category }) {
   if (!name || !category) {
@@ -18,9 +24,9 @@ const getGroceries = async (req, res) => {
 };
 
 const addGrocery = async (req, res) => {
-  const validationError = validateGrocery(req.body);
-  if (validationError) return error(res, validationError, 400);
-  const { name, category } = req.body;
+  const parse = grocerySchema.safeParse(req.body);
+  if (!parse.success) return error(res, 'Entrée invalide: ' + parse.error.message, 400);
+  const { name, category } = parse.data;
   try {
     const result = await pool.query(
       'INSERT INTO grocery (name, category) VALUES ($1, $2) RETURNING *',
@@ -34,9 +40,9 @@ const addGrocery = async (req, res) => {
 
 const updateGrocery = async (req, res) => {
   const { id } = req.params;
-  const validationError = validateGrocery(req.body);
-  if (validationError) return error(res, validationError, 400);
-  const { name, category } = req.body;
+  const parse = grocerySchema.safeParse(req.body);
+  if (!parse.success) return error(res, 'Entrée invalide: ' + parse.error.message, 400);
+  const { name, category } = parse.data;
   try {
     const result = await pool.query(
       'UPDATE grocery SET name = $1, category = $2 WHERE id = $3 RETURNING *',

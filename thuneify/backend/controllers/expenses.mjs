@@ -1,5 +1,12 @@
 import { pool } from '../config/db.mjs';
 import { success, error } from '../utils/response.mjs';
+import { z } from 'zod';
+
+const expenseSchema = z.object({
+  date: z.string(),
+  perso: z.number().optional(),
+  commun: z.number().optional(),
+});
 
 function validateExpense({ date, perso, commun }) {
   if (!date || (perso == null && commun == null)) {
@@ -9,8 +16,10 @@ function validateExpense({ date, perso, commun }) {
 }
 
 const getExpenses = async (req, res) => {
+  const limit = parseInt(req.query.limit) || 20;
+  const offset = parseInt(req.query.offset) || 0;
   try {
-    const result = await pool.query('SELECT * FROM expenses');
+    const result = await pool.query('SELECT * FROM expenses ORDER BY date DESC LIMIT $1 OFFSET $2', [limit, offset]);
     return success(res, result.rows);
   } catch (err) {
     return error(res, err.message);
@@ -18,9 +27,9 @@ const getExpenses = async (req, res) => {
 };
 
 const addExpense = async (req, res) => {
-  const validationError = validateExpense(req.body);
-  if (validationError) return error(res, validationError, 400);
-  const { date, perso, commun } = req.body;
+  const parse = expenseSchema.safeParse(req.body);
+  if (!parse.success) return error(res, 'Entrée invalide: ' + parse.error.message, 400);
+  const { date, perso, commun } = parse.data;
   try {
     const result = await pool.query(
       'INSERT INTO expenses (date, perso, commun) VALUES ($1, $2, $3) RETURNING *',
@@ -34,9 +43,9 @@ const addExpense = async (req, res) => {
 
 const updateExpense = async (req, res) => {
   const { id } = req.params;
-  const validationError = validateExpense(req.body);
-  if (validationError) return error(res, validationError, 400);
-  const { date, perso, commun } = req.body;
+  const parse = expenseSchema.safeParse(req.body);
+  if (!parse.success) return error(res, 'Entrée invalide: ' + parse.error.message, 400);
+  const { date, perso, commun } = parse.data;
   try {
     const result = await pool.query(
       'UPDATE expenses SET date = $1, perso = $2, commun = $3 WHERE id = $4 RETURNING *',

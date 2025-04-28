@@ -2,18 +2,12 @@
 
 import { Dashboard } from "@/components/expenses/expenses-dashboard";
 import { useAuth } from "@/context/auth-context";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useAuthRedirect } from "@/hooks/use-auth-redirect";
 
-export default function Expenses() {
+export default function ExpensesPage() {
+  useAuthRedirect();
+
   const { user, isAuthenticated, isLoading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push("/login");
-    }
-  }, [isAuthenticated, isLoading, router]);
 
   if (isLoading || !isAuthenticated || !user) {
     return (

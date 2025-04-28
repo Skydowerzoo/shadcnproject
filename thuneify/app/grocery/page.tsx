@@ -2,11 +2,13 @@
 
 import { GroceryList } from "@/components/grocery/grocery-liste";
 import { useAuth } from "@/context/auth-context";
-import AuthGuard from "@/context/auth-guard";
+import { useAuthRedirect } from "@/hooks/use-auth-redirect";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function GroceryPage() {
+  useAuthRedirect();
+
   const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const [isReady, setIsReady] = useState(false);
@@ -14,13 +16,13 @@ export default function GroceryPage() {
   useEffect(() => {
     // Si on est en train de charger, on ne fait rien encore
     if (isLoading) return;
-    
+
     // Si on n'est pas authentifié, on redirige
     if (!isAuthenticated) {
       router.replace("/login");
       return;
     }
-    
+
     // Si on arrive ici, c'est qu'on est authentifié et chargé
     setIsReady(true);
   }, [isAuthenticated, isLoading, router]);
@@ -34,9 +36,5 @@ export default function GroceryPage() {
     );
   }
 
-  return (
-
-      <GroceryList />
-
-  );
+  return <GroceryList />;
 }

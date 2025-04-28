@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useAuthRedirect } from "@/hooks/use-auth-redirect";
 import axios from "axios";
 import { LogIn, TrendingUp, User, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -22,6 +23,7 @@ import {
 } from "recharts";
 
 export default function AdminDashboard() {
+  useAuthRedirect();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

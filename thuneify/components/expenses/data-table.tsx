@@ -165,12 +165,13 @@ export function DataTable({ data }: DataTableDemoProps) {
           title: "Suppression réussie",
           description: message,
         });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erreur lors de la suppression :", error);
       toast &&
         toast({
           title: "Erreur",
-          description: "La suppression a échoué.",
+          description:
+            error.response?.data?.error || "La suppression a échoué.",
           variant: "destructive",
         });
     }

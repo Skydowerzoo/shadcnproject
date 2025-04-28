@@ -2,9 +2,23 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { getUserByEmail, createUser, getUserById, updateUserById } from '../models/user.mjs';
 import { success, error } from '../utils/response.mjs';
+import { z } from 'zod';
+
+const userSchema = z.object({
+  firstname: z.string(),
+  lastname: z.string(),
+  date: z.string().optional(),
+  email: z.string().email(),
+  phone: z.string().optional(),
+  password: z.string().optional(),
+  address: z.string().optional(),
+  bio: z.string().optional(),
+});
 
 const registerUser = async (req, res) => {
-  const { firstname, lastname, email, password } = req.body;
+  const parse = userSchema.safeParse(req.body);
+  if (!parse.success) return error(res, 'Entrée invalide: ' + parse.error.message, 400);
+  const { firstname, lastname, email, password } = parse.data;
   if (!firstname || !lastname || !email || !password) {
     return error(res, 'Tous les champs requis ne sont pas remplis.', 400);
   }
@@ -72,32 +86,11 @@ const getUser = async (req, res) => {
 };
 
 export const updateUser = async (req, res) => {
+  const parse = userSchema.safeParse(req.body);
+  if (!parse.success) return error(res, 'Entrée invalide: ' + parse.error.message, 400);
   try {
     const userId = req.params.id;
-    const {
-      firstname,
-      lastname,
-      date,
-      email,
-      phone,
-      password,
-      address,
-      bio
-    } = req.body;
-    const userData = {
-      firstname,
-      lastname,
-      date,
-      email,
-      phone,
-      address,
-      bio
-    };
-    if (password) {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      userData.password = hashedPassword;
-    }
-    const updatedUser = await updateUserById(userId, userData);
+    const updatedUser = await updateUserById(userId, req.body);
     if (!updatedUser) {
       return error(res, 'Utilisateur introuvable.', 404);
     }

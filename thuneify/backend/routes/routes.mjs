@@ -8,6 +8,8 @@ import {
     deleteGrocery
 } from '../controllers/grocery.mjs';
 import { pool } from '../config/db.mjs';
+import { authenticate } from '../middleware/auth.mjs';
+import { isAdmin } from '../middleware/isAdmin.mjs';
 
 const router = express.Router();
 
@@ -30,7 +32,7 @@ router.put('/grocery/:id', updateGrocery);
 router.delete('/grocery/:id', deleteGrocery);
 
 // Endpoint avancé pour dashboard admin
-router.get('/api/admin/stats-advanced', async (req, res) => {
+router.get('/api/admin/stats-advanced', authenticate, isAdmin, async (req, res) => {
   try {
     // Nombre total d'utilisateurs
     const users = await pool.query('SELECT COUNT(*) FROM users');
