@@ -113,6 +113,26 @@ export function AppSidebar() {
                   </SidebarMenuItem>
                 );
               })}
+              {/* Bouton Admin visible uniquement pour les admins */}
+              {user?.role === "admin" && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link
+                      href="/admin"
+                      className={`flex items-center w-full gap-3 px-2 py-2 rounded-md transition-colors duration-150 ${
+                        pathname === "/admin"
+                          ? "bg-primary/10 text-primary font-semibold"
+                          : "hover:bg-muted"
+                      } ${collapsed ? "justify-center" : ""}`}
+                      aria-current={pathname === "/admin" ? "page" : undefined}
+                      tabIndex={0}
+                    >
+                      <User className="h-5 w-5" />
+                      {!collapsed && <span>Admin</span>}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

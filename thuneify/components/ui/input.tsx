@@ -31,4 +31,8 @@ const Label = ({
   </label>
 );
 
+// Exemple d'utilisation accessible :
+// <Label htmlFor="email">Email</Label>
+// <Input id="email" ... />
+
 export { Input, Label };

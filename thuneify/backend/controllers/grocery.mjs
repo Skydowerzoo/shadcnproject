@@ -15,8 +15,12 @@ function validateGrocery({ name, category }) {
 }
 
 const getGroceries = async (req, res) => {
+  // Accepte page OU limit/offset
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 20;
+  const offset = req.query.page ? (page - 1) * limit : (parseInt(req.query.offset) || 0);
   try {
-    const result = await pool.query('SELECT * FROM grocery');
+    const result = await pool.query('SELECT * FROM grocery ORDER BY id DESC LIMIT $1 OFFSET $2', [limit, offset]);
     return success(res, result.rows);
   } catch (err) {
     return error(res, err.message);

@@ -95,6 +95,7 @@ export function GroceryList() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
 
   // Charger les articles au montage du composant si l'utilisateur est connecté
   useEffect(() => {
@@ -127,7 +128,7 @@ export function GroceryList() {
 
     try {
       setIsLoading(true);
-      const response = await axios.get(`${API_URL}/grocery`, {
+      const response = await axios.get(`${API_URL}/grocery?page=${page}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -550,6 +551,12 @@ export function GroceryList() {
                   />
                 </TabsContent>
               </Tabs>
+              <div className="flex justify-between mt-4">
+                <Button onClick={() => setPage(page - 1)} disabled={page === 1}>
+                  Précédent
+                </Button>
+                <Button onClick={() => setPage(page + 1)}>Suivant</Button>
+              </div>
             </CardContent>
           </Card>
         </div>

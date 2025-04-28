@@ -32,7 +32,7 @@ router.put('/grocery/:id', updateGrocery);
 router.delete('/grocery/:id', deleteGrocery);
 
 // Endpoint avancé pour dashboard admin
-router.get('/api/admin/stats-advanced', authenticate, isAdmin, async (req, res) => {
+router.get('/admin/stats-advanced', authenticate, isAdmin, async (req, res) => {
   try {
     // Nombre total d'utilisateurs
     const users = await pool.query('SELECT COUNT(*) FROM users');

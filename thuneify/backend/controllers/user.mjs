@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { getUserByEmail, createUser, getUserById, updateUserById } from '../models/user.mjs';
+import { getUserByEmail, createUser, getUserById, updateUserById, getAllUsers } from '../models/user.mjs';
 import { success, error } from '../utils/response.mjs';
 import { z } from 'zod';
 
@@ -63,7 +63,8 @@ const loginUser = async (req, res) => {
     await import('../config/db.mjs').then(async ({ pool }) => {
       await pool.query('UPDATE users SET login_count = COALESCE(login_count,0) + 1 WHERE id = $1', [user.id]);
     });
-    const token = jwt.sign({ id: user.id }, 'votre_secret_jwt', { expiresIn: '1h' });
+    // Inclure le rôle dans le token JWT
+    const token = jwt.sign({ id: user.id, role: user.role }, 'votre_secret_jwt', { expiresIn: '1h' });
     const { password: _, ...userWithoutPassword } = user;
     return success(res, { token, user: userWithoutPassword });
   } catch (err) {
@@ -98,6 +99,17 @@ export const updateUser = async (req, res) => {
     return success(res, userWithoutPassword);
   } catch (err) {
     return error(res, 'Erreur serveur lors de la mise à jour.');
+  }
+};
+
+export const getUsers = async (req, res) => {
+  const limit = parseInt(req.query.limit) || 20;
+  const offset = parseInt(req.query.offset) || 0;
+  try {
+    const users = await getAllUsers(limit, offset); // à implémenter dans le modèle si besoin
+    return success(res, users);
+  } catch (err) {
+    return error(res, err.message);
   }
 };
 
