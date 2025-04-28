@@ -1,13 +1,15 @@
 import { Inter } from "next/font/google";
-import type React from "react";
-import { AppSidebar } from "../components/app-sidebar";
+import React from "react";
+import { AppSidebar } from "../components/sidebar/app-sidebar";
 import { ThemeProvider } from "../components/theme-provider";
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger
+  SidebarTrigger,
 } from "../components/ui/sidebar";
+import { AuthProvider } from "../context/auth-context";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,23 +22,26 @@ export default function RootLayout({
     <html lang="fr" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
+          attribute="class" 
+          defaultTheme="system" 
+          enableSystem={true}
+          disableTransitionOnChange={true}
+          themes={["light", "dark", "pink"]}
         >
-          <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset>
-              <header className="flex h-16 shrink-0 items-center gap-2 border-none px-4">
-                <SidebarTrigger className="-ml-1" />
-              </header>
-              <main className="flex flex-1 flex-col gap-4 p-4">
-                {children}
-              </main>
-            </SidebarInset>
-          </SidebarProvider>
-
+          <AuthProvider>
+            <SidebarProvider>
+              <AppSidebar />
+              <SidebarInset>
+                <header className="flex h-16 shrink-0 items-center gap-2 border-none px-4">
+                  <SidebarTrigger className="-ml-1" />
+                </header>
+                <main className="flex flex-1 flex-col gap-4 p-4">
+                  {children}
+                  <Toaster />
+                </main>
+              </SidebarInset>
+            </SidebarProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

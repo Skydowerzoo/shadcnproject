@@ -1,17 +1,12 @@
-import { LoginForm } from "@/components/login-form";
+"use client";
+
+import Login from "@/components/login/login";
 
 export default function Page() {
+
   return (
-    <div className="grid grid-cols-3 gap-4 w-full">
-      <div>01</div>
-      <div className="place-self-auto">
-        02
-        <LoginForm />
-      </div>
-      <div>03</div>
-      <div>04</div>
-      <div>05</div>
-      <div>06</div>
+    <div>
+      <Login />
     </div>
   );
 }

@@ -1,6 +1,6 @@
-import * as React from "react"
+import * as React from "react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
   ({ className, type, ...props }, ref) => {
@@ -14,9 +14,25 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
         ref={ref}
         {...props}
       />
-    )
+    );
   }
-)
-Input.displayName = "Input"
+);
+Input.displayName = "Input";
 
-export { Input }
+const Label = ({
+  htmlFor,
+  children,
+}: {
+  htmlFor: string;
+  children: React.ReactNode;
+}) => (
+  <label htmlFor={htmlFor} className="block text-sm font-medium text-gray-700">
+    {children}
+  </label>
+);
+
+// Exemple d'utilisation accessible :
+// <Label htmlFor="email">Email</Label>
+// <Input id="email" ... />
+
+export { Input, Label };
